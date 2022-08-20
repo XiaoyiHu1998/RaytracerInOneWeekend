@@ -6,7 +6,7 @@
 class perlin{
 private:
     static const int pointCount = 256;
-    double* randomFloat;
+    vec3* randomVec3Array;
     int* permX;
     int* permY;
     int* permZ;
@@ -32,16 +32,22 @@ private:
         }
     }
 
-    static double trilinearInterpolation(double c[2][2][2], double u, double v, double w){
+    static double trilinearInterpolation(vec3 c[2][2][2], double u, double v, double w){
         auto accum = 0.0;
+
+        auto hermeticRounding = [](double value){ return value * value * (3 - 2* value); };
+        double uu = hermeticRounding(u);
+        double vv = hermeticRounding(v);
+        double ww = hermeticRounding(w);
 
         for(int i = 0; i < 2; i++){
             for(int j = 0; j < 2; j++){
                 for(int k = 0; k < 2; k++){
-                    accum += (i * u + (1 - i) * (1 - u)) * 
-                             (j * v + (1 - j) * (1 - v)) *
-                             (k * w + (1 - k) * (1 - w)) *
-                             c[i][j][k];
+                    vec3 weightVector(u-i, v-j, w-k);
+                    accum += (i * uu + (1 - i) * (1 - uu)) * 
+                             (j * vv + (1 - j) * (1 - vv)) *
+                             (k * ww + (1 - k) * (1 - ww)) *
+                             dot(c[i][j][k], weightVector);
                 }
             }
         }
@@ -51,9 +57,9 @@ private:
 
 public:
     perlin(){
-        randomFloat = new double[pointCount];
+        randomVec3Array = new vec3[pointCount];
         for(int i = 0; i < pointCount; i++){
-            randomFloat[i] = randomDouble(sharedRandomDevice, 0, 1);
+            randomVec3Array[i] = randomUnitVector();
         }
 
         permX = perlinGeneratePerm();
@@ -62,7 +68,7 @@ public:
     }
 
     ~perlin(){
-        delete[] randomFloat;
+        delete[] randomVec3Array;
         delete[] permX;
         delete[] permY;
         delete[] permZ;
@@ -73,29 +79,38 @@ public:
         double u = removeFloor(point.x());
         double v = removeFloor(point.y());
         double w = removeFloor(point.z());
-
-        auto hermeticRounding = [](double value){ return value * value * (3 - 2* value); };
-        u = hermeticRounding(u);
-        v = hermeticRounding(v);
-        w = hermeticRounding(w);
         
         auto floorDoubleToInt = [](double value){ return static_cast<int>(floor(value)); };
         auto i = floorDoubleToInt(point.x());
         auto j = floorDoubleToInt(point.y());
         auto k = floorDoubleToInt(point.z());
 
-        double c[2][2][2];
+        vec3 c[2][2][2];
 
         for(int di = 0; di < 2; di++){
             for(int dj = 0; dj < 2; dj++){
                 for(int dk = 0; dk < 2; dk++){
-                    c[di][dj][dk] = randomFloat[permX[(i + di) & 255] ^ permY[(j + dj) & 255] ^ permZ[(k + dk) & 255]];
+                    c[di][dj][dk] = randomVec3Array[permX[(i + di) & 255] ^ permY[(j + dj) & 255] ^ permZ[(k + dk) & 255]];
                 }
             }
         }
 
 
         return trilinearInterpolation(c, u, v, w);
+    }
+
+    double turbulence(const point3& point, int depth = 7) const {
+        point3 tempPoint = point;
+        double accum = 0.0;
+        double weight = 1.0;
+
+        for(int i = 0; i < depth; i++){
+            accum += weight * noise(tempPoint);
+            weight *= 0.5;
+            tempPoint *= 2;
+        }
+
+        return fabs(accum);
     }
 
 };
