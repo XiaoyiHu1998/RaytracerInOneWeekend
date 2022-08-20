@@ -3,11 +3,12 @@
 
 #include "rtweekend.hpp"
 #include "hittable.hpp"
+#include "texture.hpp"
 
 class material{
 public:
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const = 0;
-    virtual color getAlbedo() const = 0;
+    virtual color getAlbedoColor() const = 0;
 };
 
 
@@ -15,10 +16,17 @@ namespace mat{
     
 class lambertian : public material{
 private:
-    color albedo;
+    std::shared_ptr<texture> albedoTexture;
+    color albedoColor;
 public:
     lambertian(const color& albedo):
-        albedo{albedo}
+        albedoTexture{std::make_shared<solidColorTexture>(albedo)},
+        albedoColor{albedo}
+        {}
+
+    lambertian(const std::shared_ptr<texture>& albedo):
+        albedoTexture{albedo},
+        albedoColor{albedo->value(0, 0, vec3(0,0,0))} //TODO: check if vec3 correct
         {}
 
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const override{
@@ -40,13 +48,13 @@ public:
         if(scatterDirection.nearZero())
             scatterDirection = record.normal;
 
-        rayScattered = ray(record.hitLocation, scatterDirection);
-        attenuation = albedo;
+        rayScattered = ray(record.hitLocation, scatterDirection, rayIncoming.hitTime());
+        attenuation = albedoTexture->value(record.u, record.v, record.hitLocation);
         return true;
     }
 
-    virtual color getAlbedo() const override{
-        return albedo;
+    virtual color getAlbedoColor() const override{
+        return albedoColor;
     }
 };
 
@@ -63,12 +71,12 @@ public:
 
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const override {
         vec3 reflectedDirection = reflect(rayIncoming.direction(), record.normal) + roughness * randomInUnitSphere();
-        rayScattered = ray(record.hitLocation, reflectedDirection);
+        rayScattered = ray(record.hitLocation, reflectedDirection, rayIncoming.hitTime());
         attenuation = albedo;
         return dot(reflectedDirection, record.normal) > 0;
     }
 
-    virtual color getAlbedo() const override{
+    virtual color getAlbedoColor() const override{
         return albedo;
     }
 };
@@ -105,12 +113,12 @@ public:
         else{
             refractionDirection = refract(rayIncoming.direction(), record.normal, refractionRatio);
         }
-        rayScattered = ray(record.hitLocation, refractionDirection);
+        rayScattered = ray(record.hitLocation, refractionDirection, rayIncoming.hitTime());
 
         return true;
     }
 
-    virtual color getAlbedo() const override{
+    virtual color getAlbedoColor() const override{
         return albedo;
     }
 };

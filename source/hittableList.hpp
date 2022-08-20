@@ -15,6 +15,11 @@ public:
     void add(std::shared_ptr<hittable> object) { objects.push_back(object); }
 
     virtual bool hit(const ray& r, double distMin, double distMax, hitRecord& record) const override;
+    virtual bool boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const override;
+
+    std::vector<std::shared_ptr<hittable>> objectList() const {
+        return objects;
+    }
 };
 
 bool hittableList::hit(const ray& r, double distMin, double distMax, hitRecord& record) const {
@@ -31,6 +36,22 @@ bool hittableList::hit(const ray& r, double distMin, double distMax, hitRecord& 
     }
     
     return hit;
+}
+
+bool hittableList::boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const {
+    if(objects.empty())
+        return false;
+
+    axisAlignedBoundingBox tempbox = axisAlignedBoundingBox();
+    bool firstBox = true;
+
+    for(const std::shared_ptr<hittable>& objectPointer : objects){
+        if(!objectPointer->boundingBox(tStart, tEnd, tempbox)) return false;
+        refbox = firstBox ? tempbox : surroundingBox(tempbox, refbox);
+        firstBox = false;
+    }
+
+    return true;
 }
 
 #endif //HITTABLE_LIST_HPP

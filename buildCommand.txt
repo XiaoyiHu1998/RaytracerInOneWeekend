@@ -1,0 +1,1 @@
+C:\TDM-GCC-64\bin\g++ source/main.cpp -I./source/ -I./vendor/ -lOpenImageDenoise -L./vendor/OIDN -o./build/raytracer.exe

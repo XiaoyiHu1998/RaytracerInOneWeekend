@@ -14,8 +14,14 @@ private:
 
     double lensRadius;
 
+    double exposureStart;
+    double exposureEnd;
+
 public:
-    camera(point3 cameraPosition, point3 cameraTarget, vec3 upDirection, double verticalFOV, double aspectRatio, double aperture, double focusDistance){
+    camera(point3 cameraPosition, point3 cameraTarget, vec3 upDirection, 
+    double verticalFOV, double aspectRatio, double aperture, double focusDistance,
+    double startTime, double endTime){
+
         double theta = degrees_to_radians(verticalFOV);
         double viewportHeight = 2.0 * tan(theta / 2);
         double viewportWidth = aspectRatio * viewportHeight;
@@ -30,6 +36,9 @@ public:
         vertical = focusDistance * viewportHeight * v;
         lowerLeftCorner = origin - horizontal/2 - vertical/2 - focusDistance * w;
         lensRadius = aperture / 2.0;
+
+        exposureStart = startTime;
+        exposureEnd = endTime;
     }
 
     camera(double viewportWidth, double viewportHeight, double focalLength, point3 cameraLocation = point3(0,0,0)){
@@ -43,7 +52,7 @@ public:
         vec3 lensPosition = lensRadius * randomInUnitDisk();
         vec3 lensPositionOffset = u * lensPosition.x() + v * lensPosition.y();
 
-        return ray(origin + lensPositionOffset, lowerLeftCorner + x*horizontal + y*vertical - origin - lensPositionOffset);
+        return ray(origin + lensPositionOffset, lowerLeftCorner + x*horizontal + y*vertical - origin - lensPositionOffset, randomDouble(sharedRandomDevice, exposureStart, exposureEnd));
     }
 };
 

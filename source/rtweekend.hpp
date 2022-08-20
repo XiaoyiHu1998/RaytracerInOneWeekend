@@ -16,10 +16,16 @@ inline double degrees_to_radians(double degrees){
     return degrees * pi / 180.0;
 }
 
-inline double randomDouble(std::random_device& randomDevice, int inclusiveMin = 0.0, int exclusiveMax = 1.0){
+inline double randomDouble(std::random_device& randomDevice, double inclusiveMin = 0.0, double exclusiveMax = 1.0){
     std::mt19937 rng(randomDevice());
     std::uniform_real_distribution<double> distribution(inclusiveMin, exclusiveMax);
     return distribution(rng);
+}
+
+inline int randomInt(std::random_device& randomDevice, int inclusiveMin = 0, int exclusiveMax = 1){
+    std::mt19937 rng(randomDevice());
+    std::uniform_real_distribution<double> distribution(inclusiveMin, exclusiveMax);
+    return static_cast<int>(distribution(rng));
 }
 
 inline double clamp(double x, double min, double max){

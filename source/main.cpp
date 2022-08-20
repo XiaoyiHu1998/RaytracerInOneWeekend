@@ -17,10 +17,17 @@
 //Select MultiThreading or Singlethreading
 #define MT
 
+#include <chrono>
+using namespace std::chrono_literals;
+
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <vector>
 #include <thread>
+#include <atomic>
 #include <memory>
+
 #include "stb_image_write.hpp"
 #include "rtweekend.hpp"
 #include "material.hpp"
@@ -28,8 +35,12 @@
 #include "hittableList.hpp"
 #include "imageWriting.hpp"
 #include "camera.hpp"
+#include "workCounter.hpp"
+#include "bvhNode.hpp"
+#include "scene.hpp"
+
 #ifdef OIDN
-    #include "vendor/OIDN/oidn.hpp"
+    #include "../vendor/OIDN/oidn.hpp"
 #endif
 
 color rayNormalColor(const ray& r, const hittable& world, int depth){
@@ -48,7 +59,7 @@ color rayAlbedoColor(const ray& r, const hittable& world, int depth){
     hitRecord record;
 
     if(world.hit(r, 0.001, infinity, record)){
-        return record.materialPointer->getAlbedo();
+        return record.materialPointer->getAlbedoColor();
     }
 
     vec3 normalizedDirection = normalize(r.direction());
@@ -79,59 +90,14 @@ color rayColor(const ray& r, const hittable& world, int depth){
     return (1.0 - dist) * color(1.0, 1.0, 1.0) + dist * color(0.5, 0.7, 1.0);
 }
 
-hittableList randomScene() {
-    hittableList world;
 
-    auto ground_material = std::make_shared<mat::lambertian>(color(0.5, 0.5, 0.5));
-    world.add(std::make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
-
-
-    for (int a = -11; a < 11; a++) {
-        for (int b = -11; b < 11; b++) {
-            auto choose_mat = randomDouble(sharedRandomDevice);
-            point3 center(a + 0.9*randomDouble(sharedRandomDevice), 0.2, b + 0.9*randomDouble(sharedRandomDevice));
-
-            if ((center - point3(4, 0.2, 0)).length() > 0.9) {
-                std::shared_ptr<material> sphere_material;
-
-                if (choose_mat < 0.8) {
-                    // diffuse
-                    auto albedo = color::random() * color::random();
-                    sphere_material = std::make_shared<mat::lambertian>(albedo);
-                    world.add(std::make_shared<sphere>(center, 0.2, sphere_material));
-                } else if (choose_mat < 0.95) {
-                    // metal
-                    auto albedo = color::random(0.5, 1);
-                    auto fuzz = randomDouble(sharedRandomDevice, 0, 0.5);
-                    sphere_material = std::make_shared<mat::metal>(albedo, fuzz);
-                    world.add(std::make_shared<sphere>(center, 0.2, sphere_material));
-                } else {
-                    // glass
-                    sphere_material = std::make_shared<mat::dielectric>(1.5);
-                    world.add(std::make_shared<sphere>(center, 0.2, sphere_material));
-                }
-            }
-        }
-    }
-
-    auto material1 = std::make_shared<mat::dielectric>(1.5);
-    world.add(std::make_shared<sphere>(point3(0, 1, 0), 1.0, material1));
-
-    auto material2 = std::make_shared<mat::lambertian>(color(0.4, 0.2, 0.1));
-    world.add(std::make_shared<sphere>(point3(-4, 1, 0), 1.0, material2));
-
-    auto material3 = std::make_shared<mat::metal>(color(0.7, 0.6, 0.5), 0.0);
-    world.add(std::make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
-
-    return world;
-}
-
-void renderImage(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, const int maxDepth = 10){
+void renderImage(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10){
     std::random_device randomDevice;
     int index = 0;
 
     for(int y = image_height - 1; y >= 0; y--){
-        std::cerr << "\rRemaining Rows: " << y << "    " << std::flush;
+        // std::cerr << "\rRemaining Rows: " << y << "                                    " << std::flush;
+        counter.incrementWork();
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
@@ -189,9 +155,9 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 3.0 / 2.0;
-    const int image_width = 800;
+    const int image_width = 600;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 1;
+    const int pixelSampleCount = 5;
     const int maxDepth = 10;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
@@ -200,12 +166,12 @@ int main(){
     std::vector<float> inputHDR, outputHDR, albedoHDR, normalHDR;
 
     inputSDR.reserve(imageBufferSize);
-    albedoSDR.reserve(imageBufferSize);
-    normalSDR.reserve(imageBufferSize);
     inputHDR.reserve(imageBufferSize);
-    outputHDR.reserve(imageBufferSize);
+    albedoSDR.reserve(imageBufferSize);
     albedoHDR.reserve(imageBufferSize);
+    normalSDR.reserve(imageBufferSize);
     normalHDR.reserve(imageBufferSize);
+    outputHDR.reserve(imageBufferSize);
 
     for(int i = 0; i < imageBufferSize; i++){
         inputHDR.push_back(0.0);
@@ -214,18 +180,15 @@ int main(){
     outputSDR = inputSDR;
     outputHDR = inputHDR;
 
-    //World
-    hittableList world = randomScene();
+    //Scene
+    hittableList world;
+    point3 cameraPosition, cameraTarget, cameraUp;
+    setScene(scene::checkered2Sphere, world, cameraPosition, cameraTarget, cameraUp);
 
-
-    //Camera
-    point3 cameraPosition(13,2,3);
-    point3 cameraTarget(0,0,0);
-    vec3 cameraUp(0,1,0);
+    //Camera View
     auto focusDistance = 10.0;
     auto aperture = 0.1;
-
-    camera worldCamera(cameraPosition, cameraTarget, cameraUp, 20.0, image_aspect_ratio, aperture, focusDistance);
+    camera worldCamera(cameraPosition, cameraTarget, cameraUp, 20.0, image_aspect_ratio, aperture, focusDistance, 0.0, 1.0);
 
     //Render
     #ifdef PPM_OUTPUT
@@ -233,8 +196,8 @@ int main(){
     #endif
     
     #ifdef OIDN
-        std::thread albedoThread(renderAlbedo, image_width, image_height, 10, std::ref(albedoSDR), std::ref(worldCamera), std::ref(world), 10);
-        std::thread normalThread(renderNormal, image_width, image_height, 10, std::ref(normalSDR), std::ref(worldCamera), std::ref(world), 10);
+        std::thread albedoThread(renderAlbedo, image_width, image_height, pixelSampleCount, std::ref(albedoSDR), std::ref(worldCamera), std::ref(world), 10);
+        std::thread normalThread(renderNormal, image_width, image_height, pixelSampleCount, std::ref(normalSDR), std::ref(worldCamera), std::ref(world), 10);
     #endif
 
     #ifdef MT
@@ -244,16 +207,19 @@ int main(){
         std::vector<std::thread> threadPool;
         threadPool.reserve(threadCount);
 
+        workCounter counter(image_height, threadCount);
+
         for(int i = 0; i < threadCount; i++){
             imageBuffers.push_back(inputSDR);
         }
 
         for(int i = 0; i < threadCount; i++){
-            threadPool.push_back(std::thread(renderImage, image_width, image_height, samplesPerThread, std::ref(imageBuffers[i]), std::ref(worldCamera), std::ref(world), 10));
+            threadPool.push_back(std::thread(renderImage, image_width, image_height, samplesPerThread, std::ref(imageBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
         }
 
-        for(int i = 0; i < threadCount; i++){
-            threadPool[i].join();
+        while(!counter.isWorkDone()){
+            counter.outputWorkDone();
+            std::this_thread::sleep_for(500ms);
         }
 
         std::cerr << '\r' << "merging thread imageBuffers" << std::flush;
@@ -333,7 +299,7 @@ int main(){
     #endif
 
     #ifndef OIDN
-        convertHDRtoSDR(inputSDR, imageUnfilteredSDR);
+        convertHDRtoSDR(inputHDR, inputSDR);
     #endif
 
     #ifdef PNG_OUTPUT
@@ -344,7 +310,11 @@ int main(){
             stbi_write_png("./../output/imageNormal.png", image_width, image_height, image_channels, &normalSDR[0], 0);
         #endif
     #endif
+
+
+    std::cerr << "\n\nFinished." << std::flush;
+    std::cin.get();
 }
 
 
-//g++ main.cpp -o ./../build/raytracer.exe -std=c++17 -O3 -L./vendor/OIDN/ -lOpenImageDenoise -ltbb12
+//g++ source/main.cpp -I./source/ -I./vendor/ -lOpenImageDenoise -L./vendor/OIDN -o./build/raytracer.exe

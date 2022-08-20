@@ -2,6 +2,7 @@
 #define HITTABLE_HPP
 
 #include "ray.hpp"
+#include "axisAlignedBoundingBox.hpp"
 
 class material; //tells compiler material class will be declared somewhere later on
 
@@ -10,6 +11,9 @@ struct hitRecord{
     vec3 normal;
     double distance;
     bool frontFace;
+
+    double u;
+    double v;
     
     std::shared_ptr<material> materialPointer;
 
@@ -22,6 +26,7 @@ struct hitRecord{
 class hittable{
 public:
     virtual bool hit(const ray& r, double distMin, double distMax, hitRecord& record) const = 0;
+    virtual bool boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const = 0;
 };
 
 #endif //HITTABLE_HPP
