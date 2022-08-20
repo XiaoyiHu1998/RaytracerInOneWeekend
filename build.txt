@@ -1,0 +1,1 @@
+g++ ./source/main.cpp -I./vendor/OIDN/ -I./source/ -L./vendor/OIDN -lOpenImageDenoise -ltbb12 -o./build/raytracer.exe -O3 -std=c++17 

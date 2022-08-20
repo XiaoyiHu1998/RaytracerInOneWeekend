@@ -7,7 +7,9 @@
 
 enum class scene {
     manyBalls,
-    checkered2Sphere
+    twoCheckeredSpheres,
+    twoPerlinSpheres
+
 };
 
 hittableList randomScene() {
@@ -58,17 +60,29 @@ hittableList randomScene() {
     return world;
 }
 
-hittableList twoSpheres(){
+hittableList twoCheckeredSpheres(){
     hittableList world;
 
     auto checker = std::make_shared<checkerTexture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
-    auto chekeredMaterial = std::make_shared<mat::lambertian>(checker);
+    auto checkeredMaterial = std::make_shared<mat::lambertian>(checker);
 
     vec3 topSphereLocation = vec3(0, 10, 0);
     vec3 underSphereLocation = vec3(0,-10, 0);
 
-    world.add(std::make_shared<sphere>(topSphereLocation, topSphereLocation, 10, 0, 1, chekeredMaterial));
-    world.add(std::make_shared<sphere>(underSphereLocation, underSphereLocation, 10, 0, 1, chekeredMaterial));
+    world.add(std::make_shared<sphere>(topSphereLocation, topSphereLocation, 10, 0, 1, checkeredMaterial));
+    world.add(std::make_shared<sphere>(underSphereLocation, underSphereLocation, 10, 0, 1, checkeredMaterial));
+
+    return world;
+}
+
+hittableList twoPerlinSpheres(){
+    hittableList world;
+
+    std::shared_ptr<perlinTexture> noiseTexture = std::make_shared<perlinTexture>(4.0);
+    std::shared_ptr<mat::lambertian> noiseMaterial = std::make_shared<mat::lambertian>(noiseTexture);
+
+    world.add(std::make_shared<sphere>(point3(0,-1000,0), point3(0,-1000,0), 1000, 0, 1, noiseMaterial));
+    world.add(std::make_shared<sphere>(point3(0, 2, 0), point3(0, 2, 0), 2, 0, 1, noiseMaterial));
 
     return world;
 }
@@ -82,8 +96,15 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
             cameraUp = point3(0,1,0);
             break;
 
-        case scene::checkered2Sphere:
-            world = twoSpheres();
+        case scene::twoCheckeredSpheres:
+            world = twoCheckeredSpheres();
+            cameraPosition = point3(13,2,3);
+            cameraTarget = point3(0,0,0);
+            cameraUp = point3(0,1,0);
+            break;
+
+        case scene::twoPerlinSpheres:
+            world = twoPerlinSpheres();
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);

@@ -17,9 +17,6 @@
 //Select MultiThreading or Singlethreading
 #define MT
 
-#include <chrono>
-using namespace std::chrono_literals;
-
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -27,6 +24,8 @@ using namespace std::chrono_literals;
 #include <thread>
 #include <atomic>
 #include <memory>
+#include <chrono>
+using namespace std::chrono_literals;
 
 #include "stb_image_write.hpp"
 #include "rtweekend.hpp"
@@ -58,8 +57,9 @@ color rayAlbedoColor(const ray& r, const hittable& world, int depth){
     //object color
     hitRecord record;
 
+    color attenuation;
     if(world.hit(r, 0.001, infinity, record)){
-        return record.materialPointer->getAlbedoColor();
+        return record.materialPointer->getAlbedoColor(r, record, attenuation);
     }
 
     vec3 normalizedDirection = normalize(r.direction());
@@ -155,13 +155,14 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 3.0 / 2.0;
-    const int image_width = 600;
+    const int image_width = 500;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
     const int pixelSampleCount = 5;
     const int maxDepth = 10;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
     
+#pragma region buffersetup
     std::vector<uint8_t> inputSDR, albedoSDR, normalSDR, outputSDR;
     std::vector<float> inputHDR, outputHDR, albedoHDR, normalHDR;
 
@@ -179,11 +180,12 @@ int main(){
     }
     outputSDR = inputSDR;
     outputHDR = inputHDR;
+#pragma endregion
 
     //Scene
     hittableList world;
     point3 cameraPosition, cameraTarget, cameraUp;
-    setScene(scene::checkered2Sphere, world, cameraPosition, cameraTarget, cameraUp);
+    setScene(scene::twoPerlinSpheres, world, cameraPosition, cameraTarget, cameraUp);
 
     //Camera View
     auto focusDistance = 10.0;
@@ -312,8 +314,8 @@ int main(){
     #endif
 
 
-    std::cerr << "\n\nFinished." << std::flush;
-    std::cin.get();
+    std::cerr << "\rFinished.                         \n" << std::flush;
+    // std::cin.get();
 }
 
 

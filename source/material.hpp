@@ -8,7 +8,7 @@
 class material{
 public:
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const = 0;
-    virtual color getAlbedoColor() const = 0;
+    virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const = 0;
 };
 
 
@@ -17,16 +17,13 @@ namespace mat{
 class lambertian : public material{
 private:
     std::shared_ptr<texture> albedoTexture;
-    color albedoColor;
 public:
     lambertian(const color& albedo):
-        albedoTexture{std::make_shared<solidColorTexture>(albedo)},
-        albedoColor{albedo}
+        albedoTexture{std::make_shared<solidColorTexture>(albedo)}
         {}
 
     lambertian(const std::shared_ptr<texture>& albedo):
-        albedoTexture{albedo},
-        albedoColor{albedo->value(0, 0, vec3(0,0,0))} //TODO: check if vec3 correct
+        albedoTexture{albedo}
         {}
 
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const override{
@@ -53,8 +50,8 @@ public:
         return true;
     }
 
-    virtual color getAlbedoColor() const override{
-        return albedoColor;
+    virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const override{
+        return albedoTexture->value(record.u, record.v, record.hitLocation);
     }
 };
 
@@ -76,7 +73,7 @@ public:
         return dot(reflectedDirection, record.normal) > 0;
     }
 
-    virtual color getAlbedoColor() const override{
+    virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const override{
         return albedo;
     }
 };
@@ -118,7 +115,7 @@ public:
         return true;
     }
 
-    virtual color getAlbedoColor() const override{
+    virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const override{
         return albedo;
     }
 };
