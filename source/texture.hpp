@@ -62,8 +62,8 @@ public:
         scale{scale}
         {}
 
-    virtual color value(double u, double v, const vec3& point) const override{
-        return color(1,1,1) * 0.5 * (1.0 + sin(scale * point.z() + 10 * perlinNoise.turbulence(scale * point)));
+    virtual color value(double u, double v, const vec3& point) const override {
+        return color(1,1,1) * 0.5 * (1.0 + sin(scale * point.z() + 10 * perlinNoise.turbulence(point)));
     }
 };
 
