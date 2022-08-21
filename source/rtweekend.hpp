@@ -10,20 +10,19 @@
 const double infinity = std::numeric_limits<double>::infinity();
 const double pi = 3.1415926535897932385;
 std::random_device sharedRandomDevice;
+std::mt19937 sharedRng(sharedRandomDevice());
 
 //Utility functions
 inline double degrees_to_radians(double degrees){
     return degrees * pi / 180.0;
 }
 
-inline double randomDouble(std::random_device& randomDevice, double inclusiveMin = 0.0, double exclusiveMax = 1.0){
-    std::mt19937 rng(randomDevice());
+inline double randomDouble(std::mt19937& rng, double inclusiveMin = 0.0, double exclusiveMax = 1.0){
     std::uniform_real_distribution<double> distribution(inclusiveMin, exclusiveMax);
     return distribution(rng);
 }
 
-inline int randomInt(std::random_device& randomDevice, int inclusiveMin = 0, int exclusiveMax = 1){
-    std::mt19937 rng(randomDevice());
+inline int randomInt(std::mt19937& rng, int inclusiveMin = 0, int exclusiveMax = 1){
     std::uniform_real_distribution<double> distribution(inclusiveMin, exclusiveMax);
     return static_cast<int>(distribution(rng));
 }

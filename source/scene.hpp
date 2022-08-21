@@ -21,9 +21,9 @@ hittableList randomScene() {
 
     for (int a = -11; a < 11; a++) {
         for (int b = -11; b < 11; b++) {
-            auto choose_mat = randomDouble(sharedRandomDevice);
-            point3 startCenter(a + 0.9*randomDouble(sharedRandomDevice), 0.2, b + 0.9*randomDouble(sharedRandomDevice));
-            point3 endCenter = startCenter + point3(0, randomDouble(sharedRandomDevice, 0, 0.45), 0);
+            auto choose_mat = randomDouble(sharedRng);
+            point3 startCenter(a + 0.9*randomDouble(sharedRng), 0.2, b + 0.9*randomDouble(sharedRng));
+            point3 endCenter = startCenter + point3(0, randomDouble(sharedRng, 0, 0.25), 0);
 
             if ((startCenter - point3(4, 0.2, 0)).length() > 0.9) {
                 std::shared_ptr<material> sphere_material;
@@ -36,7 +36,7 @@ hittableList randomScene() {
                 } else if (choose_mat < 0.95) {
                     // metal
                     auto albedo = color::random(0.5, 1);
-                    auto fuzz = randomDouble(sharedRandomDevice, 0, 0.5);
+                    auto fuzz = randomDouble(sharedRng, 0, 0.5);
                     sphere_material = std::make_shared<mat::metal>(albedo, fuzz);
                     world.add(std::make_shared<sphere>(startCenter, endCenter, 0.2, 0, 1.0, sphere_material));
                 } else {
@@ -49,9 +49,9 @@ hittableList randomScene() {
     }
 
     auto material1 = std::make_shared<mat::dielectric>(1.5);
-
     world.add(std::make_shared<sphere>(point3(0, 1, 0), point3(0, 1, 0), 1.0, 0.0, 1.0, material1));
-    auto material2 = std::make_shared<mat::lambertian>(color(0.4, 0.2, 0.1));
+
+    auto material2 = std::make_shared<mat::lambertian>(std::make_shared<perlinTexture>());
     world.add(std::make_shared<sphere>(point3(-4, 1, 0), point3(-4, 1, 0), 1.0, 0.0, 1.0, material2));
 
     auto material3 = std::make_shared<mat::metal>(color(0.7, 0.6, 0.5), 0.0);

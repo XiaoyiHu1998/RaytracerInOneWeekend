@@ -91,6 +91,7 @@ color rayColor(const ray& r, const hittable& world, int depth){
 
 void renderImage(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10){
     std::random_device randomDevice;
+    std::mt19937 rng(randomDevice());
     int index = 0;
 
     for(int y = image_height - 1; y >= 0; y--){
@@ -99,9 +100,9 @@ void renderImage(const int image_width, const int image_height, const int pixelS
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
-                double u = (x + randomDouble(randomDevice, 0.0, 1.0)) / (image_width - 1);
-                double v = (y + randomDouble(randomDevice, 0.0, 1.0)) / (image_height - 1);
-                pixelColorSum += rayColor(worldCamera.getRay(u,v), world, maxDepth);
+                double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
+                double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
+                pixelColorSum += rayColor(worldCamera.getRay(u,v,rng), world, maxDepth);
             }
 
             writeColor(std::cout, imageBuffer, index, pixelColorSum, pixelSampleCount);
@@ -112,6 +113,7 @@ void renderImage(const int image_width, const int image_height, const int pixelS
 
 void renderAlbedo(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, const int maxDepth = 10){
     std::random_device randomDevice;
+    std::mt19937 rng(randomDevice());
     int index = 0;
 
     for(int y = image_height - 1; y >= 0; y--){
@@ -119,9 +121,9 @@ void renderAlbedo(const int image_width, const int image_height, const int pixel
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
-                double u = (x + randomDouble(randomDevice, 0.0, 1.0)) / (image_width - 1);
-                double v = (y + randomDouble(randomDevice, 0.0, 1.0)) / (image_height - 1);
-                pixelColorSum += rayAlbedoColor(worldCamera.getRay(u,v), world, maxDepth);
+                double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
+                double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
+                pixelColorSum += rayAlbedoColor(worldCamera.getRay(u,v,rng), world, maxDepth);
             }
 
             writeColor(std::cout, imageBuffer, index, pixelColorSum, pixelSampleCount);
@@ -132,6 +134,7 @@ void renderAlbedo(const int image_width, const int image_height, const int pixel
 
 void renderNormal(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, const int maxDepth = 10){
     std::random_device randomDevice;
+    std::mt19937 rng(randomDevice());
     int index = 0;
 
     for(int y = image_height - 1; y >= 0; y--){
@@ -139,9 +142,9 @@ void renderNormal(const int image_width, const int image_height, const int pixel
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
-                double u = (x + randomDouble(randomDevice, 0.0, 1.0)) / (image_width - 1);
-                double v = (y + randomDouble(randomDevice, 0.0, 1.0)) / (image_height - 1);
-                pixelColorSum += rayNormalColor(worldCamera.getRay(u,v), world, maxDepth);
+                double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
+                double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
+                pixelColorSum += rayNormalColor(worldCamera.getRay(u,v,rng), world, maxDepth);
             }
 
             writeColor(std::cout, imageBuffer, index, pixelColorSum, pixelSampleCount);
@@ -153,9 +156,9 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 3.0 / 2.0;
-    const int image_width = 500;
+    const int image_width = 1000;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 5;
+    const int pixelSampleCount = 10;
     const int maxDepth = 10;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
@@ -183,7 +186,7 @@ int main(){
     //Scene
     hittableList world;
     point3 cameraPosition, cameraTarget, cameraUp;
-    setScene(scene::earth, world, cameraPosition, cameraTarget, cameraUp);
+    setScene(scene::manyBalls, world, cameraPosition, cameraTarget, cameraUp);
 
     //Camera View
     auto focusDistance = 10.0;
@@ -220,6 +223,11 @@ int main(){
         while(!counter.isWorkDone()){
             counter.outputWorkDone();
             std::this_thread::sleep_for(500ms);
+        }
+        
+        //clean up threadPool
+        for (int i = 0; i < threadCount; i++) {
+            threadPool[i].join();
         }
 
         std::cerr << '\r' << "merging thread imageBuffers" << std::flush;
@@ -317,4 +325,4 @@ int main(){
 }
 
 
-//g++ source/main.cpp -I./source/ -I./vendor/ -lOpenImageDenoise -L./vendor/OIDN -o./build/raytracer.exe
+//g++ source/main.cpp -I./source/ -I./vendor/ -lOpenImageDenoise -L./vendor/OIDN -o./build/raytracer.exe -O3

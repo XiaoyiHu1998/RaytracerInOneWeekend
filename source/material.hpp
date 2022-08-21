@@ -104,7 +104,7 @@ public:
 
         bool cantRefract = refractionRatio * sinTheta > 1.0;
         vec3 refractionDirection;
-        if(cantRefract || reflectance(cosTheta, refractionRatio) > randomDouble(sharedRandomDevice)){
+        if(cantRefract || reflectance(cosTheta, refractionRatio) > randomDouble(sharedRng)){
             refractionDirection = reflect(rayIncoming.direction(), record.normal);
         }
         else{

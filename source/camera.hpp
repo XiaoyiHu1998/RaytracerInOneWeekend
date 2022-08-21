@@ -48,11 +48,11 @@ public:
         lowerLeftCorner = origin - horizontal/2 - vertical/2 - vec3(0, 0, focalLength);
     }
 
-    ray getRay(double x, double y) const {
+    ray getRay(double x, double y, std::mt19937& rng) const {
         vec3 lensPosition = lensRadius * randomInUnitDisk();
         vec3 lensPositionOffset = u * lensPosition.x() + v * lensPosition.y();
 
-        return ray(origin + lensPositionOffset, lowerLeftCorner + x*horizontal + y*vertical - origin - lensPositionOffset, randomDouble(sharedRandomDevice, exposureStart, exposureEnd));
+        return ray(origin + lensPositionOffset, lowerLeftCorner + x*horizontal + y*vertical - origin - lensPositionOffset, randomDouble(rng, exposureStart, exposureEnd));
     }
 };
 

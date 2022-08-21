@@ -21,7 +21,7 @@ public:
     double z() const { return values[2]; }
 
     inline static vec3 random(double min = 0.0, double max = 1.0){
-        return vec3(randomDouble(sharedRandomDevice, min, max), randomDouble(sharedRandomDevice, min, max), randomDouble(sharedRandomDevice, min, max));
+        return vec3(randomDouble(sharedRng, min, max), randomDouble(sharedRng, min, max), randomDouble(sharedRng, min, max));
     }
 
     inline bool nearZero() const{
@@ -138,7 +138,7 @@ vec3 randomInHemisphere(const vec3& faceNormal){
 
 vec3 randomInUnitDisk(){
     while(true){
-        point3 point = vec3(randomDouble(sharedRandomDevice, -1.0, 1.0), randomDouble(sharedRandomDevice, -1.0, 1.0), 0);
+        point3 point = vec3(randomDouble(sharedRng, -1.0, 1.0), randomDouble(sharedRng, -1.0, 1.0), 0);
         if(point.lengthSquared() < 1)
             return point;
     }

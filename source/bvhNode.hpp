@@ -50,7 +50,7 @@ bool boxCompareZ(const std::shared_ptr<hittable> a, const std::shared_ptr<hittab
 bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, int listStart, int listEnd, double tStart, double tEnd){
     std::vector<std::shared_ptr<hittable>> objectList = objectListConst;
 
-    int axis = randomInt(sharedRandomDevice, 0, 3);
+    int axis = randomInt(sharedRng, 0, 3);
     auto comparator = (axis == 0) ? boxCompareX : (axis == 1) ? boxCompareY : boxCompareZ;
 
     size_t listLength = listEnd - listStart;
