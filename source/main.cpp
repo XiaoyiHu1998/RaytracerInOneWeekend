@@ -1,4 +1,3 @@
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #define PNG_OUTPUT
 // #define PPM_OUTPUT
 
@@ -27,7 +26,6 @@
 #include <chrono>
 using namespace std::chrono_literals;
 
-#include "stb_image_write.hpp"
 #include "rtweekend.hpp"
 #include "material.hpp"
 #include "sphere.hpp"
@@ -185,7 +183,7 @@ int main(){
     //Scene
     hittableList world;
     point3 cameraPosition, cameraTarget, cameraUp;
-    setScene(scene::twoPerlinSpheres, world, cameraPosition, cameraTarget, cameraUp);
+    setScene(scene::earth, world, cameraPosition, cameraTarget, cameraUp);
 
     //Camera View
     auto focusDistance = 10.0;

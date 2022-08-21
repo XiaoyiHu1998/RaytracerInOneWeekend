@@ -26,7 +26,7 @@ private:
         //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
         //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
     
-        u = (atan2(hitPoint.x(), -hitPoint.z()) + pi) / (2 * pi);
+        u = (atan2(-hitPoint.z(), hitPoint.x()) + pi) / (2 * pi);
         v = acos(-hitPoint.y()) / pi;
     }
 
@@ -38,6 +38,15 @@ public:
         endCenter{endCenter},
         startTime{startTime},
         endTime{endTime},
+        radius{radius},
+        materialPointer{materialPointer}
+        {}
+    
+    sphere(vec3 startCenter, double radius, std::shared_ptr<material> materialPointer):
+        startCenter{startCenter},
+        endCenter{startCenter},
+        startTime{0},
+        endTime{1},
         radius{radius},
         materialPointer{materialPointer}
         {}
@@ -71,7 +80,7 @@ bool sphere::hit(const ray& r, double distMin, double distMax, hitRecord& record
     vec3 outwardNormal = (record.hitLocation - center(r.hitTime())) / radius;
     record.setFaceNormal(r, outwardNormal);
     record.materialPointer = materialPointer;
-    getSphereUV(record.hitLocation, record.u, record.v);
+    getSphereUV(outwardNormal, record.u, record.v);
 
     return true;
 }

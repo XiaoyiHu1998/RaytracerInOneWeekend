@@ -3,6 +3,20 @@
 
 #include "vec3.hpp"
 
+#ifdef _MSC_VER
+    #pragma warning (push, 0); //disable warnings for stb_image lib for MSVC
+#endif 
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "./../vendor/stb/stb_image.hpp"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "./../vendor/stb/stb_image_write.hpp"
+
+
+#ifdef _MSC_VER
+    #pragma warning (pop); //re-enable warnings
+#endif 
+
 
 inline void writeColorPPM(std::ostream& out, const color& pixelColorSum, int samplesPerPixel){
     double divider = 1.0/samplesPerPixel;

@@ -8,8 +8,8 @@
 enum class scene {
     manyBalls,
     twoCheckeredSpheres,
-    twoPerlinSpheres
-
+    twoPerlinSpheres,
+    earth
 };
 
 hittableList randomScene() {
@@ -87,6 +87,14 @@ hittableList twoPerlinSpheres(){
     return world;
 }
 
+hittableList earth(){
+    std::shared_ptr<imageTexture> earthTexture = std::make_shared<imageTexture>("./../images/earthmap.jpg");
+    std::shared_ptr<mat::lambertian> earthMaterial = std::make_shared<mat::lambertian>(earthTexture);
+    std::shared_ptr<sphere> earthGlobe = std::make_shared<sphere>(point3(0,0,0), 2, earthMaterial);
+
+    return hittableList(earthGlobe);
+}
+
 void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition, point3& cameraTarget, point3& cameraUp){
     switch(sceneSelection){
         case scene::manyBalls:
@@ -105,6 +113,13 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
 
         case scene::twoPerlinSpheres:
             world = twoPerlinSpheres();
+            cameraPosition = point3(13,2,3);
+            cameraTarget = point3(0,0,0);
+            cameraUp = point3(0,1,0);
+            break;
+
+        case scene::earth:
+            world = earth();
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);
