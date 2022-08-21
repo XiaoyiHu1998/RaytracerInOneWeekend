@@ -95,8 +95,7 @@ void renderImage(const int image_width, const int image_height, const int pixelS
     int index = 0;
 
     for(int y = image_height - 1; y >= 0; y--){
-        // std::cerr << "\rRemaining Rows: " << y << "                                    " << std::flush;
-        counter.incrementWork();
+        counter.incrementWorkMain();
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
@@ -111,13 +110,13 @@ void renderImage(const int image_width, const int image_height, const int pixelS
     }
 }
 
-void renderAlbedo(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, const int maxDepth = 10){
+void renderAlbedo(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10){
     std::random_device randomDevice;
     std::mt19937 rng(randomDevice());
     int index = 0;
 
     for(int y = image_height - 1; y >= 0; y--){
-        // std::cerr << "\rRemaining Rows: " << y << "    " << std::flush;
+        counter.incrementWorkAlbedo();
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
@@ -132,13 +131,13 @@ void renderAlbedo(const int image_width, const int image_height, const int pixel
     }
 }
 
-void renderNormal(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, const int maxDepth = 10){
+void renderNormal(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10){
     std::random_device randomDevice;
     std::mt19937 rng(randomDevice());
     int index = 0;
 
     for(int y = image_height - 1; y >= 0; y--){
-        // std::cerr << "\rRemaining Rows: " << y << "    " << std::flush;
+        counter.incrementWorkNormal();
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
@@ -156,9 +155,9 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 3.0 / 2.0;
-    const int image_width = 1000;
+    const int image_width = 600;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 10;
+    const int pixelSampleCount = 20;
     const int maxDepth = 10;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
@@ -192,32 +191,42 @@ int main(){
     auto focusDistance = 10.0;
     auto aperture = 0.1;
     camera worldCamera(cameraPosition, cameraTarget, cameraUp, 20.0, image_aspect_ratio, aperture, focusDistance, 0.0, 1.0);
-
-    //Render
-    #ifdef PPM_OUTPUT
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-    #endif
     
-    #ifdef OIDN
-        std::thread albedoThread(renderAlbedo, image_width, image_height, pixelSampleCount, std::ref(albedoSDR), std::ref(worldCamera), std::ref(world), 10);
-        std::thread normalThread(renderNormal, image_width, image_height, pixelSampleCount, std::ref(normalSDR), std::ref(worldCamera), std::ref(world), 10);
+    
+    #if defined(OIDN) && !defined(MT)
+        workCounter counter(image_height, 1);
+        std::thread albedoThread(renderAlbedo, image_width, image_height, pixelSampleCount, std::ref(albedoSDR), std::ref(worldCamera), std::ref(world), std::ref(counter), 10);
+        std::thread normalThread(renderNormal, image_width, image_height, pixelSampleCount, std::ref(normalSDR), std::ref(worldCamera), std::ref(world), std::ref(counter), 10);
     #endif
 
     #ifdef MT
         const int threadCount = std::max(1, static_cast<int>(std::thread::hardware_concurrency() - 2));
         const int samplesPerThread = std::max(1, pixelSampleCount / threadCount);
-        std::vector<std::vector<uint8_t>> imageBuffers;
-        std::vector<std::thread> threadPool;
-        threadPool.reserve(threadCount);
+
+        std::vector<std::vector<uint8_t>> mainBuffers;
+        std::vector<std::vector<uint8_t>> albedoBuffers;
+        std::vector<std::vector<uint8_t>> normalBuffers;
+
+        std::vector<std::thread> threadPoolMain;
+        std::vector<std::thread> threadPoolAlbedo;
+        std::vector<std::thread> threadPoolNormal;
+
+        threadPoolMain.reserve(threadCount);
+        threadPoolAlbedo.reserve(threadCount);
+        threadPoolNormal.reserve(threadCount);
 
         workCounter counter(image_height, threadCount);
 
         for(int i = 0; i < threadCount; i++){
-            imageBuffers.push_back(inputSDR);
+            mainBuffers.push_back(inputSDR);
         }
+        albedoBuffers = mainBuffers;
+        normalBuffers = mainBuffers;
 
         for(int i = 0; i < threadCount; i++){
-            threadPool.push_back(std::thread(renderImage, image_width, image_height, samplesPerThread, std::ref(imageBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
+            threadPoolMain.push_back(std::thread(renderImage, image_width, image_height, samplesPerThread, std::ref(mainBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
+            threadPoolAlbedo.push_back(std::thread(renderAlbedo, image_width, image_height, samplesPerThread, std::ref(albedoBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
+            threadPoolNormal.push_back(std::thread(renderNormal, image_width, image_height, samplesPerThread, std::ref(normalBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
         }
 
         while(!counter.isWorkDone()){
@@ -226,17 +235,25 @@ int main(){
         }
         
         //clean up threadPool
-        for (int i = 0; i < threadCount; i++) {
-            threadPool[i].join();
+        for (int i = 0; i < threadCount; i++){
+            threadPoolMain[i].join();
+            threadPoolAlbedo[i].join();
+            threadPoolNormal[i].join();
         }
 
         std::cerr << '\r' << "merging thread imageBuffers" << std::flush;
         for(int i = 0; i < imageBufferSize; i++){
-            int sum = 0;
-            for(int j = 0; j < imageBuffers.size(); j++){
-                sum += imageBuffers[j][i];
+            int sumMain = 0;
+            int sumAlbedo = 0;
+            int sumNormal = 0;
+            for(int j = 0; j < mainBuffers.size(); j++){
+                sumMain += mainBuffers[j][i];
+                sumAlbedo += albedoBuffers[j][i];
+                sumNormal += normalBuffers[j][i];
             }
-            inputSDR[i] = sum / threadCount;
+            inputSDR[i] = sumMain / threadCount;
+            albedoSDR[i] = sumAlbedo / threadCount;
+            normalSDR[i] = sumNormal / threadCount;
         }
     #endif
     
@@ -245,10 +262,12 @@ int main(){
     #endif
 
     #ifdef OIDN
-        std::cerr << '\r' << "waiting for albedo and normal threads        " << std::flush;
+        #if defined OIDN && !defined MT
+        std::cerr << '\r' << "waiting for albedo and normal threads                                       " << std::flush;
         albedoThread.join();
         normalThread.join();
-        std::cerr << '\r' << "albedo and normal renders done         " << std::flush;
+        std::cerr << '\r' << "albedo and normal renders done                                       " << std::flush;
+        #endif
 
         // Create an Intel Open Image Denoise device
         std::cerr << '\r' << "creating devices                       " << std::flush;
@@ -260,7 +279,7 @@ int main(){
         convertSDRtoHDR(normalSDR, normalHDR);
 
         // Create a filter for denoising a beauty (color) image using prefiltered auxiliary images too
-        std::cerr << '\r' << "setting beautyfilter                   " << std::flush;
+        std::cerr << '\r' << "setting beautyfilter                                       " << std::flush;
         oidn::FilterRef filter = device.newFilter("RT"); // generic ray tracing filter
         filter.setImage("color",  &inputHDR[0],  oidn::Format::Float3, image_width, image_height, 0, 0, 0 * image_width); // beauty
         filter.setImage("albedo", &albedoHDR[0], oidn::Format::Float3, image_width, image_height, 0, 0, 0 * image_width); // auxiliary
@@ -271,29 +290,29 @@ int main(){
         filter.commit();
 
         // Create a separate filter for denoising an auxiliary albedo image (in-place)
-        std::cerr << '\r' << "setting prefilter albedo                   " << std::flush;
+        std::cerr << '\r' << "setting prefilter albedo                                       " << std::flush;
         oidn::FilterRef albedoFilter = device.newFilter("RT"); // same filter type as for beauty
         albedoFilter.setImage("albedo", &albedoHDR[0], oidn::Format::Float3, image_width, image_height, 0, 0, 0 * image_width);
         albedoFilter.setImage("output", &albedoHDR[0], oidn::Format::Float3, image_width, image_height, 0, 0, 0 * image_width);
         albedoFilter.commit();
 
         // Create a separate filter for denoising an auxiliary normal image (in-place)
-        std::cerr << '\r' << "setting prefilter normal                   " << std::flush;
+        std::cerr << '\r' << "setting prefilter normal                                       " << std::flush;
         oidn::FilterRef normalFilter = device.newFilter("RT"); // same filter type as for beauty
         normalFilter.setImage("normal", &normalHDR[0], oidn::Format::Float3, image_width, image_height, 0, 0, 0 * image_width);
         normalFilter.setImage("output", &normalHDR[0], oidn::Format::Float3, image_width, image_height, 0, 0, 0 * image_width);
         normalFilter.commit();
 
         // Prefilter the auxiliary images
-        std::cerr << '\r' << "prefiltering albedo             " << std::flush;
+        std::cerr << '\r' << "prefiltering albedo                                       " << std::flush;
         albedoFilter.execute();
-        std::cerr << '\r' << "prefiltering normals            " << std::flush;
+        std::cerr << '\r' << "prefiltering normals                                      " << std::flush;
         normalFilter.execute();
 
         // // Filter the beauty image
-        std::cerr << '\r' << "denoising beauty image                     " << std::flush;
+        std::cerr << '\r' << "denoising beauty image                                    " << std::flush;
         filter.execute();
-        std::cerr << '\r' << "denoised beauty image                      " << std::flush;
+        std::cerr << '\r' << "denoised beauty image                                     " << std::flush;
 
         // Check for errors
         const char* errorMessage;
@@ -320,7 +339,7 @@ int main(){
     #endif
 
 
-    std::cerr << "\rFinished.                         \n" << std::flush;
+    std::cerr << "\rFinished.                                       " << std::flush;
     // std::cin.get();
 }
 
