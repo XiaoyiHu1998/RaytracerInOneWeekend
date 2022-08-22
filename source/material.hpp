@@ -9,6 +9,7 @@ class material{
 public:
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const = 0;
     virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const = 0;
+    virtual color emitted(const double u, const double v, const point3& hitLocation) const { return color(0,0,0); }
 };
 
 
@@ -117,6 +118,36 @@ public:
 
     virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const override{
         return albedo;
+    }
+};
+
+class diffuseLight : public material{
+private:
+    std::shared_ptr<texture> emmision;
+    double strength;
+    double size;
+
+public:
+    diffuseLight(std::shared_ptr<texture> emmision, double strength = 1.0):
+        emmision{emmision},
+        strength{strength}
+        {}
+    
+    diffuseLight(const color& emmisioncolor, double strength = 1.0):
+        emmision{std::make_shared<solidColorTexture>(emmisioncolor)},
+        strength{strength}
+        {}
+
+    virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const override{
+        return false;
+    }
+
+    virtual color emitted(const double u, const double v, const point3& hitLocation) const override {
+        return strength * emmision->value(u, v, hitLocation);
+    }
+
+    virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const override {
+        return emmision->value(record.u, record.v, record.hitLocation);
     }
 };
 

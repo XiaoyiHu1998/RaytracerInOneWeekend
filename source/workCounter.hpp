@@ -16,11 +16,11 @@ public:
         image_height{image_height},
         threadCount{threadCount},
         totalWork{image_height * threadCount}
-    {
-        std::atomic_init(&workDoneMain, 0);
-        std::atomic_init(&workDoneAlbedo, 0);
-        std::atomic_init(&workDoneNormal, 0);
-    }
+        {
+            std::atomic_init(&workDoneMain, 0);
+            std::atomic_init(&workDoneAlbedo, 0);
+            std::atomic_init(&workDoneNormal, 0);
+        }
 
     void incrementWorkMain(int increments = 1){
         std::atomic_fetch_add(&workDoneMain, increments);
@@ -41,7 +41,7 @@ public:
         int workDoneNormalNonAtomic = std::atomic_load(&workDoneNormal);
         int totalWorkDoneNonAtomic = workDoneAlbedoNonAtomic + workDoneNormalNonAtomic + workDoneMainNonAtomic;
 
-        outputLine << "\rTotal: " << std::setprecision(2) << (double(totalWorkDoneNonAtomic) / double(totalWork * 3)) * 100.0 << "%" 
+        outputLine << "\rTotal: " << static_cast<int>((double(totalWorkDoneNonAtomic) / double(totalWork * 3)) * 100.0) << "%" 
         << " | "
         << "Main:" << workDoneMainNonAtomic << "/" << totalWork
         << " | "

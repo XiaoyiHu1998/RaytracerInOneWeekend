@@ -9,7 +9,8 @@ enum class scene {
     manyBalls,
     twoCheckeredSpheres,
     twoPerlinSpheres,
-    earth
+    earth,
+    spaceEarth
 };
 
 hittableList randomScene() {
@@ -48,11 +49,11 @@ hittableList randomScene() {
         }
     }
 
-    auto material1 = std::make_shared<mat::dielectric>(1.5);
-    world.add(std::make_shared<sphere>(point3(0, 1, 0), point3(0, 1, 0), 1.0, 0.0, 1.0, material1));
-
     auto material2 = std::make_shared<mat::lambertian>(std::make_shared<perlinTexture>());
     world.add(std::make_shared<sphere>(point3(-4, 1, 0), point3(-4, 1, 0), 1.0, 0.0, 1.0, material2));
+
+    auto material1 = std::make_shared<mat::dielectric>(1.5);
+    world.add(std::make_shared<sphere>(point3(0, 1, 0), point3(0, 1, 0), 1.0, 0.0, 1.0, material1));
 
     auto material3 = std::make_shared<mat::metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(std::make_shared<sphere>(point3(4, 1, 0), point3(4, 1, 0), 1.0, 0.0, 1.0, material3));
@@ -95,13 +96,36 @@ hittableList earth(){
     return hittableList(earthGlobe);
 }
 
-void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition, point3& cameraTarget, point3& cameraUp){
+hittableList spaceEarth(){
+    hittableList world;
+
+    std::shared_ptr<imageTexture> earthTexture = std::make_shared<imageTexture>("./../images/earthmap.jpg");
+    std::shared_ptr<mat::lambertian> earthMaterial = std::make_shared<mat::lambertian>(earthTexture);
+    std::shared_ptr<sphere> earth = std::make_shared<sphere>(point3(0,0,0), 2, earthMaterial);
+
+    std::shared_ptr<imageTexture> moonTexture = std::make_shared<imageTexture>("./../images/moontexture.jpg");
+    std::shared_ptr<mat::lambertian> moonMaterial = std::make_shared<mat::lambertian>(moonTexture);
+    std::shared_ptr<sphere> moon = std::make_shared<sphere>(point3(3.0, -0.25, 2.5), 0.5, moonMaterial);
+
+    std::shared_ptr<imageTexture> sunTexture = std::make_shared<imageTexture>("./../images/sunTexture.jpg");
+    std::shared_ptr<mat::diffuseLight> sunMaterial = std::make_shared<mat::diffuseLight>(sunTexture, 1.0);
+    std::shared_ptr<sphere> sun = std::make_shared<sphere>(point3(6, 2.5, -2), 2.5, sunMaterial);
+
+    world.add(earth);
+    world.add(moon);
+    world.add(sun);
+
+    return world;
+}
+
+void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition, point3& cameraTarget, point3& cameraUp, color& backgroundColor){
     switch(sceneSelection){
         case scene::manyBalls:
             world = randomScene();
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);
+            backgroundColor = color(0.70, 0.80, 1.00);
             break;
 
         case scene::twoCheckeredSpheres:
@@ -109,6 +133,7 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);
+            backgroundColor = color(0.70, 0.80, 1.00);
             break;
 
         case scene::twoPerlinSpheres:
@@ -116,6 +141,7 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);
+            backgroundColor = color(0.70, 0.80, 1.00);
             break;
 
         case scene::earth:
@@ -123,7 +149,17 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);
+            backgroundColor = color(0.70, 0.80, 1.00);
             break;
+
+        case scene::spaceEarth:
+            world = spaceEarth();
+            cameraPosition = point3(13,2,3);
+            cameraTarget = point3(0,0,0);
+            cameraUp = point3(0,1,0);
+            backgroundColor = color(0,0,0);
+            break;
+
 
         default:
             break;

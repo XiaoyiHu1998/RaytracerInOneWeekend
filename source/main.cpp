@@ -1,5 +1,4 @@
 #define PNG_OUTPUT
-// #define PPM_OUTPUT
 
 // Select diffusion mode
 // #define IN_HEMISPHERE
@@ -14,6 +13,7 @@
 #define OIDN
 
 //Select MultiThreading or Singlethreading
+//Single threaded rendering is borked at this moment!
 #define MT
 
 #include <iostream>
@@ -51,7 +51,7 @@ color rayNormalColor(const ray& r, const hittable& world, int depth){
     return color(0,0,0);
 }
 
-color rayAlbedoColor(const ray& r, const hittable& world, int depth){
+color rayAlbedoColor(const ray& r, const color& backgroundColor, const hittable& world, int depth){
     //object color
     hitRecord record;
 
@@ -60,36 +60,36 @@ color rayAlbedoColor(const ray& r, const hittable& world, int depth){
         return record.materialPointer->getAlbedoColor(r, record, attenuation);
     }
 
-    vec3 normalizedDirection = normalize(r.direction());
-    double dist = 0.5 * (normalizedDirection.y() + 1.0);
-    return (1.0 - dist) * color(1.0, 1.0, 1.0) + dist * color(0.5, 0.7, 1.0);
+    return backgroundColor;
 }
 
-color rayColor(const ray& r, const hittable& world, int depth){
+color rayColor(const ray& r, const color& backgroundColor, const hittable& world, int depth){
     //return stop recursing at max depth
     if(depth <= 0){
         return color(0,0,0);
     }
+
     //object color
     hitRecord record;
 
-    if(world.hit(r, 0.001, infinity, record)){
-            ray rayScattered;
-            color attenuation;
-            if(record.materialPointer->scatter(r, record, attenuation, rayScattered))
-                return attenuation * rayColor(rayScattered, world, depth - 1);
-            
-            return color(0,0,0);
-    }
+    if(!world.hit(r, 0.001, infinity, record))
+        return backgroundColor;
 
-    //background color
-    vec3 normalizedDirection = normalize(r.direction());
-    double dist = 0.5 * (normalizedDirection.y() + 1.0);
-    return (1.0 - dist) * color(1.0, 1.0, 1.0) + dist * color(0.5, 0.7, 1.0);
+    ray rayScattered;
+    color attenuation;
+    color emmited = record.materialPointer->emitted(record.u, record.v, record.hitLocation);
+
+    if(!record.materialPointer->scatter(r, record, attenuation, rayScattered))
+        return emmited;
+
+    //TODO: check remove emmited for optimization
+    return emmited + attenuation * rayColor(rayScattered, backgroundColor, world, depth - 1);
 }
 
 
-void renderImage(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10){
+void renderImage(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, 
+                 const camera& worldCamera, const hittableList& world, workCounter& counter, const color& backgroundColor, const int maxDepth = 10)
+{
     std::random_device randomDevice;
     std::mt19937 rng(randomDevice());
     int index = 0;
@@ -101,7 +101,7 @@ void renderImage(const int image_width, const int image_height, const int pixelS
             for(int s = 0; s < pixelSampleCount; s++){
                 double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
                 double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
-                pixelColorSum += rayColor(worldCamera.getRay(u,v,rng), world, maxDepth);
+                pixelColorSum += rayColor(worldCamera.getRay(u,v,rng), backgroundColor, world, maxDepth);
             }
 
             writeColor(std::cout, imageBuffer, index, pixelColorSum, pixelSampleCount);
@@ -110,7 +110,9 @@ void renderImage(const int image_width, const int image_height, const int pixelS
     }
 }
 
-void renderAlbedo(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10){
+void renderAlbedo(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, 
+                 const camera& worldCamera, const hittableList& world, workCounter& counter, const color& backgroundColor, const int maxDepth = 10)
+{
     std::random_device randomDevice;
     std::mt19937 rng(randomDevice());
     int index = 0;
@@ -122,7 +124,7 @@ void renderAlbedo(const int image_width, const int image_height, const int pixel
             for(int s = 0; s < pixelSampleCount; s++){
                 double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
                 double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
-                pixelColorSum += rayAlbedoColor(worldCamera.getRay(u,v,rng), world, maxDepth);
+                pixelColorSum += rayAlbedoColor(worldCamera.getRay(u,v,rng), backgroundColor, world, maxDepth);
             }
 
             writeColor(std::cout, imageBuffer, index, pixelColorSum, pixelSampleCount);
@@ -131,7 +133,9 @@ void renderAlbedo(const int image_width, const int image_height, const int pixel
     }
 }
 
-void renderNormal(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10){
+void renderNormal(const int image_width, const int image_height, const int pixelSampleCount, std::vector<uint8_t>& imageBuffer, 
+                 const camera& worldCamera, const hittableList& world, workCounter& counter, const int maxDepth = 10)
+{
     std::random_device randomDevice;
     std::mt19937 rng(randomDevice());
     int index = 0;
@@ -155,9 +159,9 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 3.0 / 2.0;
-    const int image_width = 600;
+    const int image_width = 800;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 20;
+    const int pixelSampleCount = 32;
     const int maxDepth = 10;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
@@ -185,7 +189,8 @@ int main(){
     //Scene
     hittableList world;
     point3 cameraPosition, cameraTarget, cameraUp;
-    setScene(scene::manyBalls, world, cameraPosition, cameraTarget, cameraUp);
+    color backgroundColor(0,0,0);
+    setScene(scene::spaceEarth, world, cameraPosition, cameraTarget, cameraUp, backgroundColor);
 
     //Camera View
     auto focusDistance = 10.0;
@@ -193,10 +198,14 @@ int main(){
     camera worldCamera(cameraPosition, cameraTarget, cameraUp, 20.0, image_aspect_ratio, aperture, focusDistance, 0.0, 1.0);
     
     
-    #if defined(OIDN) && !defined(MT)
+    #if defined OIDN && !defined MT
         workCounter counter(image_height, 1);
         std::thread albedoThread(renderAlbedo, image_width, image_height, pixelSampleCount, std::ref(albedoSDR), std::ref(worldCamera), std::ref(world), std::ref(counter), 10);
         std::thread normalThread(renderNormal, image_width, image_height, pixelSampleCount, std::ref(normalSDR), std::ref(worldCamera), std::ref(world), std::ref(counter), 10);
+    #endif
+    
+    #ifndef MT
+        renderImage(image_width, image_height, pixelSampleCount, inputSDR, worldCamera, world, maxDepth);
     #endif
 
     #ifdef MT
@@ -224,15 +233,25 @@ int main(){
         normalBuffers = mainBuffers;
 
         for(int i = 0; i < threadCount; i++){
-            threadPoolMain.push_back(std::thread(renderImage, image_width, image_height, samplesPerThread, std::ref(mainBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
-            threadPoolAlbedo.push_back(std::thread(renderAlbedo, image_width, image_height, samplesPerThread, std::ref(albedoBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
-            threadPoolNormal.push_back(std::thread(renderNormal, image_width, image_height, samplesPerThread, std::ref(normalBuffers[i]), std::ref(worldCamera), std::ref(world), std::ref(counter), 10));
+            threadPoolMain.push_back(std::thread(renderImage, image_width, image_height, samplesPerThread, 
+                                                 std::ref(mainBuffers[i]), std::ref(worldCamera), std::ref(world), 
+                                                 std::ref(counter), std::ref(backgroundColor), 10));
+
+            threadPoolAlbedo.push_back(std::thread(renderAlbedo, image_width, image_height, samplesPerThread, 
+                                                   std::ref(albedoBuffers[i]), std::ref(worldCamera), std::ref(world), 
+                                                   std::ref(counter), std::ref(backgroundColor), 10));
+
+            threadPoolNormal.push_back(std::thread(renderNormal, image_width, image_height, samplesPerThread, 
+                                                   std::ref(normalBuffers[i]), std::ref(worldCamera), std::ref(world), 
+                                                   std::ref(counter), 10));
         }
 
         while(!counter.isWorkDone()){
             counter.outputWorkDone();
             std::this_thread::sleep_for(500ms);
         }
+        counter.outputWorkDone();
+        std::cerr << "\n" << std::flush;
         
         //clean up threadPool
         for (int i = 0; i < threadCount; i++){
@@ -255,10 +274,6 @@ int main(){
             albedoSDR[i] = sumAlbedo / threadCount;
             normalSDR[i] = sumNormal / threadCount;
         }
-    #endif
-    
-    #ifndef MT
-        renderImage(image_width, image_height, pixelSampleCount, inputSDR, worldCamera, world, maxDepth);
     #endif
 
     #ifdef OIDN
