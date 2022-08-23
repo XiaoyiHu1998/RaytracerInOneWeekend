@@ -20,8 +20,8 @@ hittableList randomScene() {
     world.add(std::make_shared<sphere>(point3(0,-1000,0), point3(0,-1000,0), 1000, 0.0, 1.0, std::make_shared<mat::lambertian>(groundTexture)));
 
 
-    for (int a = -11; a < 11; a++) {
-        for (int b = -11; b < 11; b++) {
+    for (int a = -12; a < 12; a++) {
+        for (int b = -12; b < 12; b++) {
             auto choose_mat = randomDouble(sharedRng);
             point3 startCenter(a + 0.9*randomDouble(sharedRng), 0.2, b + 0.9*randomDouble(sharedRng));
             point3 endCenter = startCenter + point3(0, randomDouble(sharedRng, 0, 0.), 0);
@@ -57,6 +57,11 @@ hittableList randomScene() {
 
     auto material3 = std::make_shared<mat::metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(std::make_shared<sphere>(point3(4, 1, 0), point3(4, 1, 0), 1.0, 0.0, 1.0, material3));
+
+    std::shared_ptr<imageTexture> sunTexture = std::make_shared<imageTexture>("./../images/sunTexture.jpg");
+    std::shared_ptr<mat::diffuseLight> sunMaterial = std::make_shared<mat::diffuseLight>(sunTexture, 1.0);
+    std::shared_ptr<sphere> sun = std::make_shared<sphere>(point3(1.5, 7, 0), 5.0, sunMaterial);
+    world.add(sun);
 
     return world;
 }
@@ -125,7 +130,7 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);
-            backgroundColor = color(0.70, 0.80, 1.00);
+            backgroundColor = color(0.0, 0.0, 0.0);
             break;
 
         case scene::twoCheckeredSpheres:
