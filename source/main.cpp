@@ -16,6 +16,9 @@
 //Single threaded rendering is borked at this moment!
 #define MT
 
+//enable BVH
+#define BVH
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -41,7 +44,7 @@ using namespace std::chrono_literals;
 #endif
 
 color rayNormalColor(const ray& r, const hittable& world, int depth){
-    //object color
+//object color[]
     hitRecord record;
 
     if(world.hit(r, 0.001, infinity, record)){
@@ -190,12 +193,16 @@ int main(){
     hittableList world;
     point3 cameraPosition, cameraTarget, cameraUp;
     color backgroundColor(0,0,0);
-    setScene(scene::spaceEarth, world, cameraPosition, cameraTarget, cameraUp, backgroundColor);
+    setScene(scene::manyBalls, world, cameraPosition, cameraTarget, cameraUp, backgroundColor);
 
     //Camera View
     auto focusDistance = 10.0;
     auto aperture = 0.1;
     camera worldCamera(cameraPosition, cameraTarget, cameraUp, 20.0, image_aspect_ratio, aperture, focusDistance, 0.0, 1.0);
+
+    #ifdef BVH
+    world = hittableList(std::make_shared<bvhNode>(world, 0.0, 1.0));
+    #endif
     
     
     #if defined OIDN && !defined MT

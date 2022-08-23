@@ -42,13 +42,13 @@ public:
 };
 
 axisAlignedBoundingBox surroundingBox(const axisAlignedBoundingBox& box1, const axisAlignedBoundingBox& box2) {
-    vec3 cornerClosest = vec3(fmin(box1.cornerClosest().x(), box2.cornerFarthest().x()),
-                              fmin(box1.cornerClosest().y(), box2.cornerFarthest().y()),
-                              fmin(box1.cornerClosest().z(), box2.cornerFarthest().z()));
+    vec3 cornerClosest = vec3(fmin(box1.cornerClosest().x(), box2.cornerClosest().x()),
+                              fmin(box1.cornerClosest().y(), box2.cornerClosest().y()),
+                              fmin(box1.cornerClosest().z(), box2.cornerClosest().z()));
 
-    vec3 cornerFarthest = vec3(fmax(box1.cornerClosest().x(), box2.cornerFarthest().x()),
-                               fmax(box1.cornerClosest().y(), box2.cornerFarthest().y()),
-                               fmax(box1.cornerClosest().z(), box2.cornerFarthest().z()));
+    vec3 cornerFarthest = vec3(fmax(box1.cornerFarthest().x(), box2.cornerFarthest().x()),
+                               fmax(box1.cornerFarthest().y(), box2.cornerFarthest().y()),
+                               fmax(box1.cornerFarthest().z(), box2.cornerFarthest().z()));
 
     return axisAlignedBoundingBox(cornerClosest, cornerFarthest);
 }

@@ -15,11 +15,11 @@ public:
 
     bvhNode(){}
 
-    bvhNode(const hittableList& list, double tStart, double tEnd):
-        bvhNode{list.objectList(), 0, list.objectList().size(), tStart, tEnd}
+    bvhNode(const hittableList& list, double tStart = 0.0, double tEnd = 1.0):
+        bvhNode{list.objectList(), 0, static_cast<uint64_t>(list.objectList().size()), tStart, tEnd}
         {}
 
-    bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, int listStart, int listEnd, double tStart, double tEnd);
+    bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd);
 
     virtual bool hit(const ray& r, double distMin, double distMax, hitRecord& record) const override;
     virtual bool boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const override;
@@ -47,25 +47,25 @@ bool boxCompareZ(const std::shared_ptr<hittable> a, const std::shared_ptr<hittab
     return boxCompare(a, b, 2);
 }
 
-bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, int listStart, int listEnd, double tStart, double tEnd){
+bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd){
     std::vector<std::shared_ptr<hittable>> objectList = objectListConst;
 
     int axis = randomInt(sharedRng, 0, 3);
     auto comparator = (axis == 0) ? boxCompareX : (axis == 1) ? boxCompareY : boxCompareZ;
 
-    size_t listLength = listEnd - listStart;
+    uint64_t listLength = listEnd - listStart;
 
     if(listLength == 1){
         left = objectList[listStart];
         right = left;
     }
     else if(listLength == 2){
-        if(comparator(objectList[listStart], objectList[listEnd])){
+        if(comparator(objectList[listStart], objectList[listEnd - 1])){
             left = objectList[listStart];
-            right = objectList[listEnd];
+            right = objectList[listEnd - 1];
         }
         else{
-            left = objectList[listEnd];
+            left = objectList[listEnd - 1];
             right = objectList[listStart];
         }
     }
