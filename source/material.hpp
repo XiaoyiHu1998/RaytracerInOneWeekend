@@ -9,7 +9,7 @@ class material{
 public:
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const = 0;
     virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const = 0;
-    virtual color emitted(const double u, const double v, const point3& hitLocation) const { return color(0,0,0); }
+    virtual color emitted(const float u, const float v, const point3& hitLocation) const { return color(0,0,0); }
 };
 
 
@@ -28,7 +28,7 @@ public:
         {}
 
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const override{
-        vec3 scatterDirection;
+        glm::vec3 scatterDirection;
 
         #ifdef IN_HEMISPHERE
             scatterDirection = randomInHemisphere(record.normal);
@@ -43,7 +43,7 @@ public:
         #endif
         
         //catch potential cases where scatterDirection == vec3(0,0,0)
-        if(scatterDirection.nearZero())
+        if(nearZero(scatterDirection))
             scatterDirection = record.normal;
 
         rayScattered = ray(record.hitLocation, scatterDirection, rayIncoming.hitTime());
@@ -60,18 +60,18 @@ public:
 class metal : public material{
 private:
     color albedo;
-    double roughness;
+    float roughness;
 public:
-    metal(const color& albedo, const double roughness):
+    metal(const color& albedo, const float roughness):
         albedo{albedo},
-        roughness{roughness < 1 ? roughness : 1.0}
+        roughness{roughness < 1.0f ? roughness : 1.0f}
         {}
 
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const override {
-        vec3 reflectedDirection = reflect(rayIncoming.direction(), record.normal) + roughness * randomInUnitSphere();
+        glm::vec3 reflectedDirection = reflect(rayIncoming.direction(), record.normal) + roughness * randomInUnitSphere();
         rayScattered = ray(record.hitLocation, reflectedDirection, rayIncoming.hitTime());
         attenuation = albedo;
-        return dot(reflectedDirection, record.normal) > 0;
+        return glm::dot(reflectedDirection, record.normal) > 0;
     }
 
     virtual color getAlbedoColor(const ray& rayIncoming, const hitRecord& record, color& attenuation) const override{
@@ -82,30 +82,30 @@ public:
 class dielectric : public material{
 private:
     color albedo;
-    double refractionIndex;
+    float refractionIndex;
 
-    static double reflectance(double cosine, double refractionIndex){
+    static float reflectance(float cosine, float refractionIndex){
         //schlicks approximation for reflectance
-        double r0 = (1 - refractionIndex) / (1 + refractionIndex);
+        float r0 = (1 - refractionIndex) / (1 + refractionIndex);
         r0 = std::pow(r0, 2);
         return r0 + (1 - r0) * std::pow((1 - cosine), 5);
     }
 public:
-    dielectric(double refractionIndex):
+    dielectric(float refractionIndex):
         refractionIndex{refractionIndex},
         albedo{color(1,1,1)}
         {}
 
     virtual bool scatter(const ray& rayIncoming, const hitRecord& record, color& attenuation, ray& rayScattered) const override {
         attenuation = color(1.0, 1.0, 1.0);
-        double refractionRatio = record.frontFace ? (1.0 / refractionIndex) : refractionIndex;
+        float refractionRatio = record.frontFace ? (1.0 / refractionIndex) : refractionIndex;
 
-        double cosTheta = std::fmin(dot(-normalize(rayIncoming.direction()), record.normal), 1.0);
-        double sinTheta = std::sqrt(1.0 - (cosTheta * cosTheta));
+        float cosTheta = std::fmin(glm::dot(-glm::normalize(rayIncoming.direction()), record.normal), 1.0);
+        float sinTheta = std::sqrt(1.0 - (cosTheta * cosTheta));
 
         bool cantRefract = refractionRatio * sinTheta > 1.0;
-        vec3 refractionDirection;
-        if(cantRefract || reflectance(cosTheta, refractionRatio) > randomDouble(sharedRng)){
+        glm::vec3 refractionDirection;
+        if(cantRefract || reflectance(cosTheta, refractionRatio) > randomFloat(sharedRng)){
             refractionDirection = reflect(rayIncoming.direction(), record.normal);
         }
         else{
@@ -124,16 +124,16 @@ public:
 class diffuseLight : public material{
 private:
     std::shared_ptr<texture> emmision;
-    double strength;
-    double size;
+    float strength;
+    float size;
 
 public:
-    diffuseLight(std::shared_ptr<texture> emmision, double strength = 1.0):
+    diffuseLight(std::shared_ptr<texture> emmision, float strength = 1.0):
         emmision{emmision},
         strength{strength}
         {}
     
-    diffuseLight(const color& emmisioncolor, double strength = 1.0):
+    diffuseLight(const color& emmisioncolor, float strength = 1.0):
         emmision{std::make_shared<solidColorTexture>(emmisioncolor)},
         strength{strength}
         {}
@@ -142,7 +142,7 @@ public:
         return false;
     }
 
-    virtual color emitted(const double u, const double v, const point3& hitLocation) const override {
+    virtual color emitted(const float u, const float v, const point3& hitLocation) const override {
         return strength * emmision->value(u, v, hitLocation);
     }
 

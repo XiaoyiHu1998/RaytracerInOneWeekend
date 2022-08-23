@@ -4,55 +4,55 @@
 class camera{
 private:
     point3 origin;
-    vec3 horizontal;
-    vec3 vertical;
-    vec3 lowerLeftCorner;
+    glm::vec3 horizontal;
+    glm::vec3 vertical;
+    glm::vec3 lowerLeftCorner;
 
-    vec3 w;
-    vec3 u;
-    vec3 v;
+    glm::vec3 w;
+    glm::vec3 u;
+    glm::vec3 v;
 
-    double lensRadius;
+    float lensRadius;
 
-    double exposureStart;
-    double exposureEnd;
+    float exposureStart;
+    float exposureEnd;
 
 public:
-    camera(point3 cameraPosition, point3 cameraTarget, vec3 upDirection, 
-    double verticalFOV, double aspectRatio, double aperture, double focusDistance,
-    double startTime, double endTime){
+    camera(point3 cameraPosition, point3 cameraTarget, glm::vec3 upDirection, 
+    float verticalFOV, float aspectRatio, float aperture, float focusDistance,
+    float startTime, float endTime){
 
-        double theta = degrees_to_radians(verticalFOV);
-        double viewportHeight = 2.0 * tan(theta / 2);
-        double viewportWidth = aspectRatio * viewportHeight;
-        double focalLength = 1.0;
+        float theta = degrees_to_radians(verticalFOV);
+        float viewportHeight = 2.0 * tan(theta / 2);
+        float viewportWidth = aspectRatio * viewportHeight;
+        float focalLength = 1.0;
 
-        w = normalize(cameraPosition - cameraTarget);
-        u = normalize(cross(upDirection, w));
-        v = cross(w, u);
+        w = glm::normalize(cameraPosition - cameraTarget);
+        u = glm::normalize(glm::cross(upDirection, w));
+        v = glm::cross(w, u);
 
         origin = cameraPosition;
         horizontal = focusDistance * viewportWidth * u;
         vertical = focusDistance * viewportHeight * v;
-        lowerLeftCorner = origin - horizontal/2 - vertical/2 - focusDistance * w;
+        lowerLeftCorner = origin - horizontal * 0.5f - vertical * 0.5f - focusDistance * w;
         lensRadius = aperture / 2.0;
 
         exposureStart = startTime;
         exposureEnd = endTime;
     }
 
-    camera(double viewportWidth, double viewportHeight, double focalLength, point3 cameraLocation = point3(0,0,0)){
+    camera(float viewportWidth, float viewportHeight, float focalLength, point3 cameraLocation = point3(0,0,0)){
         origin = cameraLocation;
-        horizontal = vec3(viewportWidth, 0, 0);
-        vertical = vec3(0, viewportHeight, 0);
-        lowerLeftCorner = origin - horizontal/2 - vertical/2 - vec3(0, 0, focalLength);
+        horizontal = glm::vec3(viewportWidth, 0, 0);
+        vertical = glm::vec3(0, viewportHeight, 0);
+        lowerLeftCorner = origin - horizontal * 0.5f - vertical * 0.5f - glm::vec3(0, 0, focalLength);
     }
 
-    ray getRay(double x, double y, std::mt19937& rng) const {
-        vec3 lensPosition = lensRadius * randomInUnitDisk();
-        vec3 lensPositionOffset = u * lensPosition.x() + v * lensPosition.y();
+    ray getRay(float x, float y, std::mt19937& rng) const {
+        glm::vec3 lensPosition = lensRadius * randomInUnitDisk();
+        glm::vec3 lensPositionOffset = u * lensPosition.x + v * lensPosition.y;
 
-        return ray(origin + lensPositionOffset, lowerLeftCorner + x*horizontal + y*vertical - origin - lensPositionOffset, randomDouble(rng, exposureStart, exposureEnd));
+        return ray(origin + lensPositionOffset, lowerLeftCorner + x*horizontal + y*vertical - origin - lensPositionOffset, randomFloat(rng, exposureStart, exposureEnd));
     }
 };
 

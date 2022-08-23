@@ -6,18 +6,18 @@
 
 class axisAlignedBoundingBox{
 private:
-    vec3 cornerClosestZ;
-    vec3 cornerFarthestZ;
+    point3 cornerClosestZ;
+    point3 cornerFarthestZ;
 
 public:
     axisAlignedBoundingBox(){}
-    axisAlignedBoundingBox(const vec3& corner1, const vec3& corner2){
-        cornerClosestZ  = corner1.z() <= corner2.z() ? corner1 : corner2;
-        cornerFarthestZ = corner1.z() > corner2.z() ? corner1 : corner2;
+    axisAlignedBoundingBox(const point3& corner1, const point3& corner2){
+        cornerClosestZ  = corner1.z <= corner2.z ? corner1 : corner2;
+        cornerFarthestZ = corner1.z > corner2.z ? corner1 : corner2;
     }
 
-    vec3 cornerClosest()  const { return cornerClosestZ; }
-    vec3 cornerFarthest() const { return cornerFarthestZ; }
+    point3 cornerClosest()  const { return cornerClosestZ; }
+    point3 cornerFarthest() const { return cornerFarthestZ; }
 
     bool hit(const ray& r, double tMin, double tMax) const {
         for(int dimension = 0; dimension < 3; dimension++){
@@ -38,17 +38,19 @@ public:
         return true;
     }
 
-
+    friend axisAlignedBoundingBox surroundingBox(const axisAlignedBoundingBox& box1, const axisAlignedBoundingBox& box2);
 };
 
 axisAlignedBoundingBox surroundingBox(const axisAlignedBoundingBox& box1, const axisAlignedBoundingBox& box2) {
-    vec3 cornerClosest = vec3(fmin(box1.cornerClosest().x(), box2.cornerClosest().x()),
-                              fmin(box1.cornerClosest().y(), box2.cornerClosest().y()),
-                              fmin(box1.cornerClosest().z(), box2.cornerClosest().z()));
+    glm::vec3 cornerClosest = glm::vec3(
+                              fmin(box1.cornerClosestZ.x, box2.cornerClosestZ.x),
+                              fmin(box1.cornerClosestZ.y, box2.cornerClosestZ.y),
+                              fmin(box1.cornerClosestZ.z, box2.cornerClosestZ.z));
 
-    vec3 cornerFarthest = vec3(fmax(box1.cornerFarthest().x(), box2.cornerFarthest().x()),
-                               fmax(box1.cornerFarthest().y(), box2.cornerFarthest().y()),
-                               fmax(box1.cornerFarthest().z(), box2.cornerFarthest().z()));
+    glm::vec3 cornerFarthest = glm::vec3(
+                               fmax(box1.cornerFarthestZ.x, box2.cornerFarthestZ.x),
+                               fmax(box1.cornerFarthestZ.y, box2.cornerFarthestZ.y),
+                               fmax(box1.cornerFarthestZ.z, box2.cornerFarthestZ.z));
 
     return axisAlignedBoundingBox(cornerClosest, cornerFarthest);
 }

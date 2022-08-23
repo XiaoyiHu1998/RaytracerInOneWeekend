@@ -6,13 +6,13 @@
 class ray{
 private:
     point3 originInternal;
-    vec3 directionInternal;
+    glm::vec3 directionInternal;
     double timePoint;
 
 public:
     ray(){}
     
-    ray(const point3& origin, const vec3& direction, double time = 0.0):
+    ray(const point3& origin, const glm::vec3& direction, double time = 0.0):
         originInternal{origin},
         directionInternal{direction},
         timePoint{time}
@@ -22,11 +22,11 @@ public:
         return originInternal;
     }    
 
-    vec3 direction() const {
+    glm::vec3 direction() const {
         return directionInternal;
     }
 
-    point3 at(double t) const {
+    point3 at(float t) const {
         return originInternal + t * directionInternal;
     }
 

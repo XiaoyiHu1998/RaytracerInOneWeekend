@@ -48,7 +48,7 @@ color rayNormalColor(const ray& r, const hittable& world, int depth){
     hitRecord record;
 
     if(world.hit(r, 0.001, infinity, record)){
-        return 0.5 * (record.normal + vec3(1,1,1)); //normal vector color
+        return 0.5f * (record.normal + glm::vec3(1,1,1)); //normal vector color
     }
     
     return color(0,0,0);
@@ -102,8 +102,8 @@ void renderImage(const int image_width, const int image_height, const int pixelS
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
-                double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
-                double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
+                double u = (x + randomFloat(rng, 0.0, 1.0)) / (image_width - 1);
+                double v = (y + randomFloat(rng, 0.0, 1.0)) / (image_height - 1);
                 pixelColorSum += rayColor(worldCamera.getRay(u,v,rng), backgroundColor, world, maxDepth);
             }
 
@@ -125,8 +125,8 @@ void renderAlbedo(const int image_width, const int image_height, const int pixel
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
-                double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
-                double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
+                double u = (x + randomFloat(rng, 0.0, 1.0)) / (image_width - 1);
+                double v = (y + randomFloat(rng, 0.0, 1.0)) / (image_height - 1);
                 pixelColorSum += rayAlbedoColor(worldCamera.getRay(u,v,rng), backgroundColor, world, maxDepth);
             }
 
@@ -148,8 +148,8 @@ void renderNormal(const int image_width, const int image_height, const int pixel
         for(int x = 0; x < image_width; x++){
             color pixelColorSum = color(0,0,0);
             for(int s = 0; s < pixelSampleCount; s++){
-                double u = (x + randomDouble(rng, 0.0, 1.0)) / (image_width - 1);
-                double v = (y + randomDouble(rng, 0.0, 1.0)) / (image_height - 1);
+                double u = (x + randomFloat(rng, 0.0, 1.0)) / (image_width - 1);
+                double v = (y + randomFloat(rng, 0.0, 1.0)) / (image_height - 1);
                 pixelColorSum += rayNormalColor(worldCamera.getRay(u,v,rng), world, maxDepth);
             }
 
@@ -164,7 +164,7 @@ int main(){
     const double image_aspect_ratio = 3.0 / 2.0;
     const int image_width = 1000;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 32;
+    const int pixelSampleCount = 36;
     const int maxDepth = 10;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
@@ -218,7 +218,7 @@ int main(){
     #endif
 
     #ifdef MT
-        const int threadCount = std::max(1, static_cast<int>(std::thread::hardware_concurrency() - 2));
+        const int threadCount = std::max(1, static_cast<int>(std::thread::hardware_concurrency() - 1));
         const int samplesPerThread = std::max(1, pixelSampleCount / threadCount);
 
         std::vector<std::vector<uint8_t>> mainBuffers;

@@ -8,7 +8,7 @@
 
 class texture{
 public:
-    virtual color value(double u, double v, const vec3& point) const = 0;
+    virtual color value(float u, float v, const glm::vec3& point) const = 0;
 };
 
 class solidColorTexture : public texture{
@@ -18,15 +18,15 @@ private:
 public:
     solidColorTexture(){}
 
-    solidColorTexture(const vec3& color):
+    solidColorTexture(const glm::vec3& color):
         colorValue{color}
     {}
 
-    solidColorTexture(double red, double green, double blue):
-        colorValue{vec3(red, green, blue)}
+    solidColorTexture(float red, float green, float blue):
+        colorValue{glm::vec3(red, green, blue)}
     {}
 
-    virtual color value(double u, double v, const vec3& point) const override {
+    virtual color value(float u, float v, const glm::vec3& point) const override {
         return colorValue;
     }
 };
@@ -48,8 +48,8 @@ public:
         odd{odd}
     {}
 
-    virtual color value(double u, double v, const vec3& point) const override {
-        double sineSum = sin(point.x() * 10) * sin(point.y() * 10) * sin(point.z() * 10);
+    virtual color value(float u, float v, const glm::vec3& point) const override {
+        float sineSum = sin(point.x * 10) * sin(point.y * 10) * sin(point.z * 10);
         return sineSum < 0 ? odd->value(u, v, point) : even->value(u, v, point);
     }
 };
@@ -57,15 +57,15 @@ public:
 class perlinTexture : public texture{
 private:
     perlin perlinNoise;
-    double scale;
+    float scale;
 public:
     perlinTexture(){}
-    perlinTexture(double scale):
+    perlinTexture(float scale):
         scale{scale}
         {}
 
-    virtual color value(double u, double v, const vec3& point) const override {
-        return color(1,1,1) * 0.5 * (1.0 + sin(scale * point.z() + 10 * perlinNoise.turbulence(point)));
+    virtual color value(float u, float v, const glm::vec3& point) const override {
+        return color(1,1,1) * 0.5f * (1.0f + sin(scale * point.z + 10 * perlinNoise.turbulence(point)));
     }
 };
 
@@ -97,7 +97,7 @@ public:
         stbi_image_free(imageData);
     }
 
-    virtual color value(double u, double v, const vec3& point) const override{
+    virtual color value(float u, float v, const glm::vec3& point) const override{
         if(imageData == nullptr)
             return color(1,0,1);
 

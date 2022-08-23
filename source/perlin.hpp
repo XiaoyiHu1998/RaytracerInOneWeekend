@@ -6,7 +6,7 @@
 class perlin{
 private:
     static const int pointCount = 256;
-    vec3* randomVec3Array;
+    glm::vec3* randomVec3Array;
     int* permX;
     int* permY;
     int* permZ;
@@ -32,18 +32,18 @@ private:
         }
     }
 
-    static double trilinearInterpolation(vec3 c[2][2][2], double u, double v, double w){
+    static float trilinearInterpolation(glm::vec3 c[2][2][2], float u, float v, float w){
         auto accum = 0.0;
 
-        auto hermeticRounding = [](double value){ return value * value * (3 - 2* value); };
-        double uu = hermeticRounding(u);
-        double vv = hermeticRounding(v);
-        double ww = hermeticRounding(w);
+        auto hermeticRounding = [](float value){ return value * value * (3 - 2* value); };
+        float uu = hermeticRounding(u);
+        float vv = hermeticRounding(v);
+        float ww = hermeticRounding(w);
 
         for(int i = 0; i < 2; i++){
             for(int j = 0; j < 2; j++){
                 for(int k = 0; k < 2; k++){
-                    vec3 weightVector(u-i, v-j, w-k);
+                    glm::vec3 weightVector(u-i, v-j, w-k);
                     accum += (i * uu + (1 - i) * (1 - uu)) * 
                              (j * vv + (1 - j) * (1 - vv)) *
                              (k * ww + (1 - k) * (1 - ww)) *
@@ -57,7 +57,7 @@ private:
 
 public:
     perlin(){
-        randomVec3Array = new vec3[pointCount];
+        randomVec3Array = new glm::vec3[pointCount];
         for(int i = 0; i < pointCount; i++){
             randomVec3Array[i] = randomUnitVector();
         }
@@ -74,18 +74,18 @@ public:
         delete[] permZ;
     }
 
-    double noise(const point3& point) const {
-        auto removeFloor = [](double value){ return value - floor(value); };
-        double u = removeFloor(point.x());
-        double v = removeFloor(point.y());
-        double w = removeFloor(point.z());
+    float noise(const point3& point) const {
+        auto removeFloor = [](float value){ return value - floor(value); };
+        float u = removeFloor(point.x);
+        float v = removeFloor(point.y);
+        float w = removeFloor(point.z);
         
-        auto floorDoubleToInt = [](double value){ return static_cast<int>(floor(value)); };
-        auto i = floorDoubleToInt(point.x());
-        auto j = floorDoubleToInt(point.y());
-        auto k = floorDoubleToInt(point.z());
+        auto floorFloatToInt = [](float value){ return static_cast<int>(floor(value)); };
+        auto i = floorFloatToInt(point.x);
+        auto j = floorFloatToInt(point.y);
+        auto k = floorFloatToInt(point.z);
 
-        vec3 c[2][2][2];
+        glm::vec3 c[2][2][2];
 
         for(int di = 0; di < 2; di++){
             for(int dj = 0; dj < 2; dj++){
@@ -99,10 +99,10 @@ public:
         return trilinearInterpolation(c, u, v, w);
     }
 
-    double turbulence(const point3& point, int depth = 7) const {
+    float turbulence(const point3& point, int depth = 7) const {
         point3 tempPoint = point;
-        double accum = 0.0;
-        double weight = 1.0;
+        float accum = 0.0;
+        float weight = 1.0;
 
         for(int i = 0; i < depth; i++){
             accum += weight * noise(tempPoint);

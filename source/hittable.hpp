@@ -8,25 +8,25 @@ class material; //tells compiler material class will be declared somewhere later
 
 struct hitRecord{
     point3 hitLocation;
-    vec3 normal;
-    double distance;
+    glm::vec3 normal;
+    float distance;
     bool frontFace;
 
-    double u;
-    double v;
+    float u;
+    float v;
     
     std::shared_ptr<material> materialPointer;
 
-    inline void setFaceNormal(const ray& r, const vec3& outwardNormal){
-        frontFace = dot(r.direction(), outwardNormal) < 0.0;
+    inline void setFaceNormal(const ray& r, const glm::vec3& outwardNormal){
+        frontFace = glm::dot(r.direction(), outwardNormal) < 0.0;
         normal = frontFace ? outwardNormal : -outwardNormal;
     }
 };
 
 class hittable{
 public:
-    virtual bool hit(const ray& r, double distMin, double distMax, hitRecord& record) const = 0;
-    virtual bool boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const = 0;
+    virtual bool hit(const ray& r, float distMin, float distMax, hitRecord& record) const = 0;
+    virtual bool boundingBox(float tStart, float tEnd, axisAlignedBoundingBox& refbox) const = 0;
 };
 
 #endif //HITTABLE_HPP

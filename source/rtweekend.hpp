@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 #include <random>
+#include "glm/glm.hpp"
 
 //Constants
 const double infinity = std::numeric_limits<double>::infinity();
@@ -17,17 +18,17 @@ inline double degrees_to_radians(double degrees){
     return degrees * pi / 180.0;
 }
 
-inline double randomDouble(std::mt19937& rng, double inclusiveMin = 0.0, double exclusiveMax = 1.0){
-    std::uniform_real_distribution<double> distribution(inclusiveMin, exclusiveMax);
+inline float randomFloat(std::mt19937& rng, float inclusiveMin = 0.0, float exclusiveMax = 1.0){
+    std::uniform_real_distribution<float> distribution(inclusiveMin, exclusiveMax);
     return distribution(rng);
 }
 
 inline int randomInt(std::mt19937& rng, int inclusiveMin = 0, int exclusiveMax = 1){
-    std::uniform_real_distribution<double> distribution(inclusiveMin, exclusiveMax);
+    std::uniform_real_distribution<float> distribution(inclusiveMin, exclusiveMax);
     return static_cast<int>(distribution(rng));
 }
 
-inline double clamp(double x, double min, double max){
+inline float clamp(float x, float min, float max){
     if(x < min) return min;
     if(x > max) return max;
     return x;

@@ -14,18 +14,18 @@ public:
     void clear() { objects.clear(); }
     void add(std::shared_ptr<hittable> object) { objects.push_back(object); }
 
-    virtual bool hit(const ray& r, double distMin, double distMax, hitRecord& record) const override;
-    virtual bool boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const override;
+    virtual bool hit(const ray& r, float distMin, float distMax, hitRecord& record) const override;
+    virtual bool boundingBox(float tStart, float tEnd, axisAlignedBoundingBox& refbox) const override;
 
     std::vector<std::shared_ptr<hittable>> objectList() const {
         return objects;
     }
 };
 
-bool hittableList::hit(const ray& r, double distMin, double distMax, hitRecord& record) const {
+bool hittableList::hit(const ray& r, float distMin, float distMax, hitRecord& record) const {
     hitRecord tempRecord;
     bool hit = false;
-    double closestHitDist = distMax;
+    float closestHitDist = distMax;
 
     for(const auto& object : objects){
         if(object->hit(r, distMin, closestHitDist, tempRecord)){
@@ -38,7 +38,7 @@ bool hittableList::hit(const ray& r, double distMin, double distMax, hitRecord& 
     return hit;
 }
 
-bool hittableList::boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const {
+bool hittableList::boundingBox(float tStart, float tEnd, axisAlignedBoundingBox& refbox) const {
     if(objects.empty())
         return false;
 

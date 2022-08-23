@@ -21,9 +21,9 @@
 inline void writeColorPPM(std::ostream& out, const color& pixelColorSum, int samplesPerPixel){
     double divider = 1.0/samplesPerPixel;
 
-    double r = pixelColorSum.x() * divider;
-    double g = pixelColorSum.y() * divider;
-    double b = pixelColorSum.z() * divider;
+    double r = pixelColorSum.x * divider;
+    double g = pixelColorSum.y * divider;
+    double b = pixelColorSum.z * divider;
 
     uint8_t r_byte = static_cast<int>(256 * clamp(r, 0, 0.999));
     uint8_t g_byte = static_cast<int>(256 * clamp(g, 0, 0.999));
@@ -35,9 +35,9 @@ inline void writeColorPPM(std::ostream& out, const color& pixelColorSum, int sam
 inline void writeColorPNG(uint8_t* imageData, int index, const color& pixelColorSum, int samplesPerPixel){
     double divider = 1.0/samplesPerPixel;
 
-    double r = pixelColorSum.x() * divider;
-    double g = pixelColorSum.y() * divider;
-    double b = pixelColorSum.z() * divider;
+    double r = pixelColorSum.x * divider;
+    double g = pixelColorSum.y * divider;
+    double b = pixelColorSum.z * divider;
 
     uint8_t r_byte = static_cast<int>(256 * clamp(r, 0, 0.999));
     uint8_t g_byte = static_cast<int>(256 * clamp(g, 0, 0.999));
@@ -53,9 +53,9 @@ inline void writeColorPNG(uint8_t* imageData, int index, const color& pixelColor
 inline void writeColor(std::ostream& out, std::vector<uint8_t>& imageData, const int index, const color& pixelColorSum, int samplesPerPixel){
     double divider = 1.0/samplesPerPixel;
 
-    float r = static_cast<float>(std::sqrt(pixelColorSum.x() * divider));
-    float g = static_cast<float>(std::sqrt(pixelColorSum.y() * divider));
-    float b = static_cast<float>(std::sqrt(pixelColorSum.z() * divider));
+    float r = static_cast<float>(std::sqrt(pixelColorSum.x * divider));
+    float g = static_cast<float>(std::sqrt(pixelColorSum.y * divider));
+    float b = static_cast<float>(std::sqrt(pixelColorSum.z * divider));
 
     uint8_t r_byte = static_cast<int>(256 * clamp(r, 0, 0.999));
     uint8_t g_byte = static_cast<int>(256 * clamp(g, 0, 0.999));

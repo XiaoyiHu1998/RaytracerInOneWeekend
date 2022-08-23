@@ -22,22 +22,22 @@ hittableList randomScene() {
 
     for (int a = -12; a < 12; a++) {
         for (int b = -12; b < 12; b++) {
-            auto choose_mat = randomDouble(sharedRng);
-            point3 startCenter(a + 0.9*randomDouble(sharedRng), 0.2, b + 0.9*randomDouble(sharedRng));
-            point3 endCenter = startCenter + point3(0, randomDouble(sharedRng, 0, 0.), 0);
+            auto choose_mat = randomFloat(sharedRng);
+            point3 startCenter(a + 0.9*randomFloat(sharedRng), 0.2, b + 0.9*randomFloat(sharedRng));
+            point3 endCenter = startCenter + point3(0, randomFloat(sharedRng, 0, 0.), 0);
 
             if ((startCenter - point3(4, 0.2, 0)).length() > 0.9) {
                 std::shared_ptr<material> sphere_material;
 
                 if (choose_mat < 0.8) {
                     // diffuse
-                    auto albedo = color::random() * color::random();
+                    color albedo = randomVec3() * randomVec3();
                     sphere_material = std::make_shared<mat::lambertian>(albedo);
                     world.add(std::make_shared<sphere>(startCenter, endCenter, 0.2, 0, 1.0, sphere_material));
                 } else if (choose_mat < 0.95) {
                     // metal
-                    auto albedo = color::random(0.5, 1);
-                    auto fuzz = randomDouble(sharedRng, 0, 0.5);
+                    color albedo = randomVec3(0.5, 1.0);
+                    auto fuzz = randomFloat(sharedRng, 0, 0.5);
                     sphere_material = std::make_shared<mat::metal>(albedo, fuzz);
                     world.add(std::make_shared<sphere>(startCenter, endCenter, 0.2, 0, 1.0, sphere_material));
                 } else {
@@ -72,8 +72,8 @@ hittableList twoCheckeredSpheres(){
     auto checker = std::make_shared<checkerTexture>(color(0.2, 0.3, 0.1), color(0.9, 0.9, 0.9));
     auto checkeredMaterial = std::make_shared<mat::lambertian>(checker);
 
-    vec3 topSphereLocation = vec3(0, 10, 0);
-    vec3 underSphereLocation = vec3(0,-10, 0);
+    glm::vec3 topSphereLocation = glm::vec3(0, 10, 0);
+    glm::vec3 underSphereLocation = glm::vec3(0,-10, 0);
 
     world.add(std::make_shared<sphere>(topSphereLocation, topSphereLocation, 10, 0, 1, checkeredMaterial));
     world.add(std::make_shared<sphere>(underSphereLocation, underSphereLocation, 10, 0, 1, checkeredMaterial));

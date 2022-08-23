@@ -19,14 +19,14 @@ public:
 
     bvhNode(){}
 
-    bvhNode(const hittableList& list, double tStart = 0.0, double tEnd = 1.0):
+    bvhNode(const hittableList& list, float tStart = 0.0, float tEnd = 1.0):
         bvhNode{list.objectList(), 0, static_cast<uint64_t>(list.objectList().size()), tStart, tEnd, bvhAxis::x}
         {}
 
-    bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd, bvhAxis axis);
+    bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, float tStart, float tEnd, bvhAxis axis);
 
-    virtual bool hit(const ray& r, double distMin, double distMax, hitRecord& record) const override;
-    virtual bool boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const override;
+    virtual bool hit(const ray& r, float distMin, float distMax, hitRecord& record) const override;
+    virtual bool boundingBox(float tStart, float tEnd, axisAlignedBoundingBox& refbox) const override;
 };
 
 inline bool boxCompare(const std::shared_ptr<hittable> a, const std::shared_ptr<hittable> b, int axis){
@@ -51,7 +51,7 @@ bool boxCompareZ(const std::shared_ptr<hittable> a, const std::shared_ptr<hittab
     return boxCompare(a, b, 2);
 }
 
-bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd, bvhAxis axis){
+bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, float tStart, float tEnd, bvhAxis axis){
     std::vector<std::shared_ptr<hittable>> objectList = objectListConst;
 
     bvhAxis nextAxis;
@@ -104,7 +104,7 @@ bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, u
     nodeBoundingBox = surroundingBox(leftBox, rightBox);
 }
 
-bool bvhNode::hit(const ray& r, double distMin, double distMax, hitRecord& record) const {
+bool bvhNode::hit(const ray& r, float distMin, float distMax, hitRecord& record) const {
     if(!nodeBoundingBox.hit(r, distMin, distMax))
         return false;
     
@@ -114,7 +114,7 @@ bool bvhNode::hit(const ray& r, double distMin, double distMax, hitRecord& recor
     return hitLeft || hitRight;
 }
 
-bool bvhNode::boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const {
+bool bvhNode::boundingBox(float tStart, float tEnd, axisAlignedBoundingBox& refbox) const {
     refbox = nodeBoundingBox;
     return true;
 }
