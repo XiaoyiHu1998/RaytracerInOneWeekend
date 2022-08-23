@@ -6,7 +6,7 @@
 #include "hittableList.hpp"
 
 enum class scene {
-    manyBalls,
+    randomBalls,
     twoCheckeredSpheres,
     twoPerlinSpheres,
     earth,
@@ -24,7 +24,7 @@ hittableList randomScene() {
         for (int b = -11; b < 11; b++) {
             auto choose_mat = randomDouble(sharedRng);
             point3 startCenter(a + 0.9*randomDouble(sharedRng), 0.2, b + 0.9*randomDouble(sharedRng));
-            point3 endCenter = startCenter + point3(0, randomDouble(sharedRng, 0, 0.25), 0);
+            point3 endCenter = startCenter + point3(0, randomDouble(sharedRng, 0, 0.), 0);
 
             if ((startCenter - point3(4, 0.2, 0)).length() > 0.9) {
                 std::shared_ptr<material> sphere_material;
@@ -120,7 +120,7 @@ hittableList spaceEarth(){
 
 void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition, point3& cameraTarget, point3& cameraUp, color& backgroundColor){
     switch(sceneSelection){
-        case scene::manyBalls:
+        case scene::randomBalls:
             world = randomScene();
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);

@@ -12,7 +12,7 @@ private:
 public:
     axisAlignedBoundingBox(){}
     axisAlignedBoundingBox(const vec3& corner1, const vec3& corner2){
-        cornerClosestZ  = corner1.z() < corner2.z() ? corner1 : corner2;
+        cornerClosestZ  = corner1.z() <= corner2.z() ? corner1 : corner2;
         cornerFarthestZ = corner1.z() > corner2.z() ? corner1 : corner2;
     }
 

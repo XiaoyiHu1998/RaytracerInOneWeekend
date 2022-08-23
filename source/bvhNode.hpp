@@ -7,6 +7,10 @@
 #include "hittable.hpp"
 #include "hittableList.hpp"
 
+enum class bvhAxis{
+    x, y, z
+};
+
 class bvhNode : public hittable {
 public:
     std::shared_ptr<hittable> left;
@@ -16,10 +20,10 @@ public:
     bvhNode(){}
 
     bvhNode(const hittableList& list, double tStart = 0.0, double tEnd = 1.0):
-        bvhNode{list.objectList(), 0, static_cast<uint64_t>(list.objectList().size()), tStart, tEnd}
+        bvhNode{list.objectList(), 0, static_cast<uint64_t>(list.objectList().size()), tStart, tEnd, bvhAxis::x}
         {}
 
-    bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd);
+    bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd, bvhAxis axis);
 
     virtual bool hit(const ray& r, double distMin, double distMax, hitRecord& record) const override;
     virtual bool boundingBox(double tStart, double tEnd, axisAlignedBoundingBox& refbox) const override;
@@ -47,11 +51,25 @@ bool boxCompareZ(const std::shared_ptr<hittable> a, const std::shared_ptr<hittab
     return boxCompare(a, b, 2);
 }
 
-bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd){
+bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, uint64_t listStart, uint64_t listEnd, double tStart, double tEnd, bvhAxis axis){
     std::vector<std::shared_ptr<hittable>> objectList = objectListConst;
 
-    int axis = randomInt(sharedRng, 0, 3);
-    auto comparator = (axis == 0) ? boxCompareX : (axis == 1) ? boxCompareY : boxCompareZ;
+    bvhAxis nextAxis;
+    auto comparator = boxCompareX;
+
+    switch(axis){
+        case bvhAxis::x:
+            nextAxis = bvhAxis::y;
+            break;
+        case bvhAxis::y:
+            nextAxis = bvhAxis::z;
+            boxCompareY;
+            break;
+        case bvhAxis::z:
+            nextAxis = bvhAxis::x;
+            boxCompareZ;
+            break;
+    }
 
     uint64_t listLength = listEnd - listStart;
 
@@ -73,8 +91,8 @@ bvhNode::bvhNode(const std::vector<std::shared_ptr<hittable>> objectListConst, u
         std::sort(objectList.begin() + listStart, objectList.begin() + listEnd, comparator);
 
         int middle = listStart + listLength / 2;
-        left = std::make_shared<bvhNode>(objectListConst, listStart, middle, tStart, tEnd);
-        right = std::make_shared<bvhNode>(objectListConst, middle, listEnd, tStart, tEnd);
+        left = std::make_shared<bvhNode>(objectListConst, listStart, middle, tStart, tEnd, nextAxis);
+        right = std::make_shared<bvhNode>(objectListConst, middle, listEnd, tStart, tEnd, nextAxis);
     }
 
     axisAlignedBoundingBox leftBox, rightBox;
@@ -91,7 +109,7 @@ bool bvhNode::hit(const ray& r, double distMin, double distMax, hitRecord& recor
         return false;
     
     bool hitLeft = left->hit(r, distMin, distMax, record);
-    bool hitRight = right->hit(r, distMin, distMax, record);
+    bool hitRight = right->hit(r, distMin, hitLeft ? record.distance : distMax, record);
 
     return hitLeft || hitRight;
 }
