@@ -5,7 +5,6 @@
 #include "material.hpp"
 #include "hittableList.hpp"
 #include "rectangle.hpp"
-#include "box.hpp"
 
 enum class scene {
     randomBalls,
@@ -145,11 +144,11 @@ hittableList cornellBox(){
     std::shared_ptr<mat::lambertian> red = std::make_shared<mat::lambertian>(color(1,0,0));
     std::shared_ptr<mat::lambertian> green = std::make_shared<mat::lambertian>(color(0,1,0));
     std::shared_ptr<mat::lambertian> white = std::make_shared<mat::lambertian>(color(1,1,1));
-    std::shared_ptr<mat::diffuseLight> light = std::make_shared<mat::diffuseLight>(color(1,1,1), 4.0);
+    std::shared_ptr<mat::diffuseLight> light = std::make_shared<mat::diffuseLight>(color(1,1,1), 10.0);
 
     world.add(std::make_shared<rectangleYZ>(0, 555, 0, 555, 555, green));
     world.add(std::make_shared<rectangleYZ>(0, 555, 0, 555, 0, red));
-    world.add(std::make_shared<rectangleXZ>(100, 455, 100, 455, 554, light));
+    world.add(std::make_shared<rectangleXZ>(213, 343, 227, 332, 554, light));
     world.add(std::make_shared<rectangleXZ>(0, 555, 0, 555, 0, white));
     world.add(std::make_shared<rectangleXZ>(0, 555, 0, 555, 555, white));
     world.add(std::make_shared<rectangleXY>(0, 555, 0, 555, 555, white));

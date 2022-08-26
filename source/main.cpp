@@ -161,10 +161,10 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 
 int main(){
     // Image
-    const double image_aspect_ratio = 3.0 / 2.0;
-    const int image_width = 800;
+    const double image_aspect_ratio = 2.0 / 2.0;
+    const int image_width = 400;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 200;
+    const int pixelSampleCount = 1000;
     const int maxDepth = 8;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
