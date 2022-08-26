@@ -4,13 +4,15 @@
 #include "rtweekend.hpp"
 #include "material.hpp"
 #include "hittableList.hpp"
+#include "rectangle.hpp"
 
 enum class scene {
     randomBalls,
     twoCheckeredSpheres,
     twoPerlinSpheres,
     earth,
-    spaceEarth
+    spaceEarth,
+    cornellBox
 };
 
 hittableList randomScene() {
@@ -48,6 +50,21 @@ hittableList randomScene() {
             }
         }
     }
+    
+    std::shared_ptr<imageTexture> sunTexture = std::make_shared<imageTexture>("./../images/sunTexture.jpg");
+    std::shared_ptr<mat::diffuseLight> sunMaterial = std::make_shared<mat::diffuseLight>(sunTexture, 0.9);
+
+    for (int a = -12; a < 12; a++) {
+        for (int b = -12; b < 12; b++) {
+            float size = randomFloat(sharedRng, 0.001, 0.03);
+            float height = 2 + randomFloat(sharedRng, -0.65, 0.65);
+            point3 startCenter(a + 0.9*randomFloat(sharedRng), height, b + 0.9*randomFloat(sharedRng));
+
+            if ((startCenter - point3(4, 2, 0)).length() > 2.5) {
+                    world.add(std::make_shared<sphere>(startCenter, size, sunMaterial));
+            }
+        }
+    }
 
     auto material2 = std::make_shared<mat::lambertian>(std::make_shared<perlinTexture>());
     world.add(std::make_shared<sphere>(point3(-4, 1, 0), point3(-4, 1, 0), 1.0, 0.0, 1.0, material2));
@@ -58,8 +75,6 @@ hittableList randomScene() {
     auto material3 = std::make_shared<mat::metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(std::make_shared<sphere>(point3(4, 1, 0), point3(4, 1, 0), 1.0, 0.0, 1.0, material3));
 
-    std::shared_ptr<imageTexture> sunTexture = std::make_shared<imageTexture>("./../images/sunTexture.jpg");
-    std::shared_ptr<mat::diffuseLight> sunMaterial = std::make_shared<mat::diffuseLight>(sunTexture, 1.0);
     std::shared_ptr<sphere> sun = std::make_shared<sphere>(point3(1.5, 7, 0), 5.0, sunMaterial);
     world.add(sun);
 
@@ -123,14 +138,31 @@ hittableList spaceEarth(){
     return world;
 }
 
-void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition, point3& cameraTarget, point3& cameraUp, color& backgroundColor){
+hittableList cornellBox(){
+    hittableList world;
+    
+    std::shared_ptr<mat::lambertian> red = std::make_shared<mat::lambertian>(color(1,0,0));
+    std::shared_ptr<mat::lambertian> green = std::make_shared<mat::lambertian>(color(0,1,0));
+    std::shared_ptr<mat::lambertian> white = std::make_shared<mat::lambertian>(color(1,1,1));
+    std::shared_ptr<mat::diffuseLight> light = std::make_shared<mat::diffuseLight>(color(1,1,1), 4.0);
+
+    world.add(std::make_shared<rectangleYZ>(0, 555, 0, 555, 555, green));
+    world.add(std::make_shared<rectangleYZ>(0, 555, 0, 555, 0, red));
+    world.add(std::make_shared<rectangleXZ>(100, 455, 100, 455, 554, light));
+    world.add(std::make_shared<rectangleXZ>(0, 555, 0, 555, 0, white));
+    world.add(std::make_shared<rectangleXZ>(0, 555, 0, 555, 555, white));
+    world.add(std::make_shared<rectangleXY>(0, 555, 0, 555, 555, white));
+    return world;
+}
+
+void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition, point3& cameraTarget, point3& cameraUp, float& vFov, color& backgroundColor){
     switch(sceneSelection){
         case scene::randomBalls:
             world = randomScene();
             cameraPosition = point3(13,2,3);
             cameraTarget = point3(0,0,0);
             cameraUp = point3(0,1,0);
-            backgroundColor = color(0.0, 0.0, 0.0);
+            backgroundColor = color(0.0025, 0.0025, 0.0025);
             break;
 
         case scene::twoCheckeredSpheres:
@@ -165,6 +197,14 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
             backgroundColor = color(0,0,0);
             break;
 
+        case scene::cornellBox:
+            world = cornellBox();
+            cameraPosition = point3(278, 278, -800);
+            cameraTarget = point3(278, 278, 0);
+            cameraUp = point3(0,1,0);
+            vFov = 40.0;
+            backgroundColor = color(0,0,0);
+            break;
 
         default:
             break;

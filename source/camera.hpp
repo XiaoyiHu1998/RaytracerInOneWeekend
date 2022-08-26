@@ -54,6 +54,7 @@ public:
 
         return ray(origin + lensPositionOffset, lowerLeftCorner + x*horizontal + y*vertical - origin - lensPositionOffset, randomFloat(rng, exposureStart, exposureEnd));
     }
+
 };
 
 

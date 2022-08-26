@@ -162,10 +162,10 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 3.0 / 2.0;
-    const int image_width = 1000;
+    const int image_width = 800;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 36;
-    const int maxDepth = 10;
+    const int pixelSampleCount = 200;
+    const int maxDepth = 8;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
     
@@ -195,12 +195,15 @@ int main(){
     hittableList world;
     point3 cameraPosition, cameraTarget, cameraUp;
     color backgroundColor(0,0,0);
-    setScene(scene::randomBalls, world, cameraPosition, cameraTarget, cameraUp, backgroundColor);
 
     //Camera View
     auto focusDistance = 10.0;
     auto aperture = 0.1;
-    camera worldCamera(cameraPosition, cameraTarget, cameraUp, 20.0, image_aspect_ratio, aperture, focusDistance, 0.0, 1.0);
+    float vFov = 20;
+    
+    setScene(scene::cornellBox, world, cameraPosition, cameraTarget, cameraUp, vFov, backgroundColor);
+    camera worldCamera(cameraPosition, cameraTarget, cameraUp, vFov, image_aspect_ratio, aperture, focusDistance, 0.0, 1.0);
+
 
     #ifdef BVH
     world = hittableList(std::make_shared<bvhNode>(world, 0.0, 1.0));
@@ -218,7 +221,7 @@ int main(){
     #endif
 
     #ifdef MT
-        const int threadCount = std::max(1, static_cast<int>(std::thread::hardware_concurrency() - 1));
+        const int threadCount = std::max(1, static_cast<int>(std::thread::hardware_concurrency()));
         const int samplesPerThread = std::max(1, pixelSampleCount / threadCount);
 
         std::vector<std::vector<uint8_t>> mainBuffers;
@@ -246,11 +249,11 @@ int main(){
                                                  std::ref(mainBuffers[i]), std::ref(worldCamera), std::ref(world), 
                                                  std::ref(counter), std::ref(backgroundColor), 10));
 
-            threadPoolAlbedo.push_back(std::thread(renderAlbedo, image_width, image_height, samplesPerThread, 
+            threadPoolAlbedo.push_back(std::thread(renderAlbedo, image_width, image_height, std::min(40, samplesPerThread), 
                                                    std::ref(albedoBuffers[i]), std::ref(worldCamera), std::ref(world), 
                                                    std::ref(counter), std::ref(backgroundColor), 10));
 
-            threadPoolNormal.push_back(std::thread(renderNormal, image_width, image_height, samplesPerThread, 
+            threadPoolNormal.push_back(std::thread(renderNormal, image_width, image_height, std::min(40, samplesPerThread), 
                                                    std::ref(normalBuffers[i]), std::ref(worldCamera), std::ref(world), 
                                                    std::ref(counter), 10));
         }

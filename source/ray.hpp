@@ -7,12 +7,12 @@ class ray{
 private:
     point3 originInternal;
     glm::vec3 directionInternal;
-    double timePoint;
+    float timePoint;
 
 public:
     ray(){}
     
-    ray(const point3& origin, const glm::vec3& direction, double time = 0.0):
+    ray(const point3& origin, const glm::vec3& direction, float time = 0.0):
         originInternal{origin},
         directionInternal{direction},
         timePoint{time}
@@ -30,7 +30,7 @@ public:
         return originInternal + t * directionInternal;
     }
 
-    double hitTime() const {
+    float hitTime() const {
         return timePoint;
     }
 };
