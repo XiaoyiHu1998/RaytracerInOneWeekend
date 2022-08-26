@@ -18,6 +18,7 @@ public:
 
     point3 cornerClosest()  const { return cornerClosestZ; }
     point3 cornerFarthest() const { return cornerFarthestZ; }
+    void translate(const glm::vec3& translation) { cornerClosestZ += translation; cornerFarthestZ += translation; }
 
     bool hit(const ray& r, double tMin, double tMax) const {
         for(int dimension = 0; dimension < 3; dimension++){
