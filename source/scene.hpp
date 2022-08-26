@@ -5,6 +5,7 @@
 #include "material.hpp"
 #include "hittableList.hpp"
 #include "rectangle.hpp"
+#include "box.hpp"
 
 enum class scene {
     randomBalls,
@@ -152,6 +153,9 @@ hittableList cornellBox(){
     world.add(std::make_shared<rectangleXZ>(0, 555, 0, 555, 0, white));
     world.add(std::make_shared<rectangleXZ>(0, 555, 0, 555, 555, white));
     world.add(std::make_shared<rectangleXY>(0, 555, 0, 555, 555, white));
+
+    world.add(std::make_shared<box>(point3(130, 0, 65), point3(295, 165, 230), white));
+    world.add(std::make_shared<box>(point3(265, 0, 295), point3(430, 330, 460), white));
     return world;
 }
 
