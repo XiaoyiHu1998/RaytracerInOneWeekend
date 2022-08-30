@@ -162,9 +162,9 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 2.0 / 2.0;
-    const int image_width = 400;
+    const int image_width = 600;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
-    const int pixelSampleCount = 1000;
+    const int pixelSampleCount = 900;
     const int maxDepth = 8;
     const int image_channels = 3;
     const int imageBufferSize = image_width * image_height * image_channels;
@@ -208,7 +208,7 @@ int main(){
     #ifdef BVH
     world = hittableList(std::make_shared<bvhNode>(world, 0.0, 1.0));
     #endif
-    
+
     
     #if defined OIDN && !defined MT
         workCounter counter(image_height, 1);

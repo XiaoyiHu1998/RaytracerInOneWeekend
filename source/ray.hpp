@@ -26,6 +26,10 @@ public:
         return directionInternal;
     }
 
+    void updateDirection(const glm::vec3& newDirection){
+        directionInternal = newDirection;
+    }
+
     point3 at(float t) const {
         return originInternal + t * directionInternal;
     }
