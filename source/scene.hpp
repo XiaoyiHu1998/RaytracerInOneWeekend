@@ -147,7 +147,7 @@ hittableList cornellBox(){
     std::shared_ptr<mat::lambertian> green = std::make_shared<mat::lambertian>(color(0,1,0));
     std::shared_ptr<mat::lambertian> white = std::make_shared<mat::lambertian>(color(1,1,1));
     std::shared_ptr<mat::lambertian> grey = std::make_shared<mat::lambertian>(color(0.5,0.5,0.5));
-    std::shared_ptr<mat::diffuseLight> light = std::make_shared<mat::diffuseLight>(color(1,1,1), 10.0);
+    std::shared_ptr<mat::diffuseLight> light = std::make_shared<mat::diffuseLight>(color(1,1,1), 15.0);
 
     world.add(std::make_shared<rectangleYZ>(0, 555, 0, 555, 555, green));
     world.add(std::make_shared<rectangleYZ>(0, 555, 0, 555, 0, red));

@@ -151,6 +151,27 @@ public:
     }
 };
 
+
+class isotropic : public material{
+private:
+    std::shared_ptr<texture> albedo;
+
+public:
+    isotropic(std::shared_ptr<texture>& texture):
+        albedo{texture}
+    {}
+
+    isotropic(color materialColor):
+        albedo{std::make_shared<solidColorTexture>(materialColor)}
+    {}
+
+    virtual bool scatter(const ray& r, const hitRecord& record, color& attenuation, ray& rayScattered) const override {
+        rayScattered = ray(record.hitLocation, randomInUnitSphere(), r.hitTime());
+        attenuation = albedo->value(record.u, record.v, record.hitLocation);
+        return true;
+    }
+};
+
 }; //end namespace mat
 
 #endif //MATERIAL_HPP

@@ -19,6 +19,9 @@
 //enable BVH
 // #define BVH
 
+//enable debug printing
+// #define DEBUG
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -162,7 +165,7 @@ void renderNormal(const int image_width, const int image_height, const int pixel
 int main(){
     // Image
     const double image_aspect_ratio = 2.0 / 2.0;
-    const int image_width = 400;
+    const int image_width = 800;
     const int image_height = static_cast<int>(image_width / image_aspect_ratio);
     const int pixelSampleCount = 200;
     const int maxDepth = 8;
