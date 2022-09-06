@@ -13,7 +13,8 @@ enum class scene {
     twoPerlinSpheres,
     earth,
     spaceEarth,
-    cornellBox
+    cornellBox,
+    instanceTest
 };
 
 hittableList randomScene() {
@@ -145,6 +146,7 @@ hittableList cornellBox(){
     std::shared_ptr<mat::lambertian> red = std::make_shared<mat::lambertian>(color(1,0,0));
     std::shared_ptr<mat::lambertian> green = std::make_shared<mat::lambertian>(color(0,1,0));
     std::shared_ptr<mat::lambertian> white = std::make_shared<mat::lambertian>(color(1,1,1));
+    std::shared_ptr<mat::lambertian> grey = std::make_shared<mat::lambertian>(color(0.5,0.5,0.5));
     std::shared_ptr<mat::diffuseLight> light = std::make_shared<mat::diffuseLight>(color(1,1,1), 10.0);
 
     world.add(std::make_shared<rectangleYZ>(0, 555, 0, 555, 555, green));
@@ -154,17 +156,30 @@ hittableList cornellBox(){
     world.add(std::make_shared<rectangleXZ>(0, 555, 0, 555, 555, white));
     world.add(std::make_shared<rectangleXY>(0, 555, 0, 555, 555, white));
 
-    std::shared_ptr<hittable> box1 = std::make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
-    std::shared_ptr<hittable> box2 = std::make_shared<box>(point3(0, 0, 0), point3(165,165,165), white);
+    std::shared_ptr<hittable> box1 = std::make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), grey);
+    std::shared_ptr<hittable> box2 = std::make_shared<box>(point3(0, 0, 0), point3(165,165,165), grey);
 
-    box1 = std::make_shared<rotate>(glm::vec3(0,15,0), box1);
+    box1 = std::make_shared<rotate>(glm::vec3(0, 15, 0), box1);
     box1 = std::make_shared<translate>(glm::vec3(265,0,295), box1);
     world.add(box1);
 
-    box2 = std::make_shared<rotate>(glm::vec3(0,-18,0), box2);
+    box2 = std::make_shared<rotate>(glm::vec3(0, -18, 0), box2);
     box2 = std::make_shared<translate>(glm::vec3(130,0,65), box2);
     world.add(box2);
 
+    return world;
+}
+
+hittableList instanceTest(){
+    hittableList world;
+
+    std::shared_ptr<mat::lambertian> blue = std::make_shared<mat::lambertian>(color(0,0,1));
+    std::shared_ptr<hittable> box1 = std::make_shared<box>(point3(-1, -1, -1), point3(1, 1, 1), blue);
+
+    box1 = std::make_shared<rotate>(glm::vec3(0, 15, 0), box1);
+    box1 = std::make_shared<translate>(glm::vec3(1,1,1), box1);
+
+    world.add(box1);
     return world;
 }
 
@@ -217,6 +232,15 @@ void setScene(scene sceneSelection, hittableList& world, point3& cameraPosition,
             cameraUp = point3(0,1,0);
             vFov = 40.0;
             backgroundColor = color(0,0,0);
+            break;
+
+        case scene::instanceTest:
+            world = instanceTest();
+            cameraPosition = point3(0,0,-8);
+            cameraTarget = point3(0,0,0);
+            cameraUp = point3(0,1,0);
+            vFov = 40.0;
+            backgroundColor = color(0.5,0.5,0.5);
             break;
 
         default:

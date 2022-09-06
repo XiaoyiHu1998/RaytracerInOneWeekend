@@ -88,13 +88,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor;D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>OpenImageDenoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalLibraryDirectories);D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalLibraryDirectories);D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor;D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,7 +113,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>OpenImageDenoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalLibraryDirectories);D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;%(AdditionalLibraryDirectories);D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -122,13 +122,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor;D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>OpenImageDenoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,7 +139,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor;D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Repositories\RaytracerInOneWeekend\source;D:\Repositories\RaytracerInOneWeekend\vendor\stb;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,7 +147,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>OpenImageDenoise.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Git_repos\RaytracerInOneWeekend\vendor\glm;D:\Git_repos\RaytracerInOneWeekend\vendor\OIDN;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN;;D:\Repositories\RaytracerInOneWeekend\vendor\OIDN</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -157,6 +157,7 @@
     <ClInclude Include="..\..\..\source\hittable.hpp" />
     <ClInclude Include="..\..\..\source\hittableList.hpp" />
     <ClInclude Include="..\..\..\source\imageWriting.hpp" />
+    <ClInclude Include="..\..\..\source\instance.hpp" />
     <ClInclude Include="..\..\..\source\material.hpp" />
     <ClInclude Include="..\..\..\source\perlin.hpp" />
     <ClInclude Include="..\..\..\source\ray.hpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="..\..\..\source\texture.hpp" />
     <ClInclude Include="..\..\..\source\vec3.hpp" />
     <ClInclude Include="..\..\..\source\workCounter.hpp" />
+    <ClInclude Include="..\..\..\vendor\glm\glm.hpp" />
     <ClInclude Include="..\..\..\vendor\OIDN\config.h" />
     <ClInclude Include="..\..\..\vendor\OIDN\oidn.h" />
     <ClInclude Include="..\..\..\vendor\OIDN\oidn.hpp" />
